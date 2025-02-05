@@ -11,13 +11,14 @@ const SceneComponent = ({ antialias, engineOptions, adaptToDeviceRatio, sceneOpt
 
     if (!canvas) return;
 
-    const engine = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
-    const scene = new Scene(engine, sceneOptions);
+    const engine: Engine = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
+    const scene: Scene = new Scene(engine, sceneOptions);
     if (scene.isReady()) {
       onSceneReady(scene);
     } else {
       scene.onReadyObservable.addOnce((scene) => onSceneReady(scene));
     }
+
 
     engine.runRenderLoop(() => {
       if (typeof onRender === "function") onRender(scene);
