@@ -7,15 +7,28 @@ import { useRef, useEffect } from "react"
 
 // configs
 const PLAYER_CONFIG = {
-    size: 1,
     position: {
         x: 4,
         y: 1,
-    }
+    },
+    size: 1,
+    speed: 0.1,
+}
+
+const GROUND_CONFIG = {
+    width: 125,
+    height: 121,
+}
+
+const LIGHT_CONFIG = {
+    intensity: 0.8,
+    position: new Vector3(0, 20, 0),
 }
 
 const createPlayer = (scene: Scene): Mesh => { // Should return a player mesh
     const player = MeshBuilder.CreateBox("player", { size: PLAYER_CONFIG.size}, scene);
+
+
     player.position.y = PLAYER_CONFIG.position.y;
     player.position.x = PLAYER_CONFIG.position.x;
     return player
@@ -30,10 +43,11 @@ const setupCamera = (scene: Scene, canvas: HTMLCanvasElement, target: Mesh): Uni
 }
 
 const setupLight = (scene: Scene): HemisphericLight => {
-    const light = new HemisphericLight("light", new Vector3(0, 20, 0), scene);
-    light.intensity = 0.7;
+    const light = new HemisphericLight("light", LIGHT_CONFIG.position, scene);
+    light.intensity = LIGHT_CONFIG.intensity;
     return light;
 }
+
 
 
 const CreateBasicScene = () => {
@@ -47,6 +61,7 @@ const CreateBasicScene = () => {
             return
         }
 
+        // Init
         const engine = new Engine(canvas, true) // First argument is the canvas element, second argument is antialiasing
         const scene = new Scene(engine) // Create a new scene
 
@@ -54,8 +69,9 @@ const CreateBasicScene = () => {
         setupCamera(scene, canvas, player)
         setupLight(scene)
         
+        // Objects
         const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene) 
-        sphere.position.y = 20
+        sphere.position.y = 20 // Same as the light
 
         
         const box = MeshBuilder.CreateBox("box", { size: 2 }, scene) 
@@ -63,9 +79,10 @@ const CreateBasicScene = () => {
 
         MeshBuilder.CreateGround(
             "ground",
-            { width: 125, height: 121 },
+            GROUND_CONFIG,
             scene
         )
+
 
         engine.runRenderLoop(() => { 
             scene.render() // Render the scene
