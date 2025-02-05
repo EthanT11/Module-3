@@ -36,7 +36,7 @@ const setupLight = (scene: Scene): HemisphericLight => {
 }
 
 
-const CreateBasicScene = (): HTMLCanvasElement => {
+const CreateBasicScene = () => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
 
