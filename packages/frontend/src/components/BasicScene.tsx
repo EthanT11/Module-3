@@ -1,11 +1,11 @@
 import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Mesh } from "@babylonjs/core"
 import { useRef, useEffect } from "react"
 
-// TODO: Add a player character
 // TODO: handle movement | Need a control scheme that's easy to use for the player WASD and mouse only
 // TODO: Add a camera to the player
 // TODO: Start factoring out the scene props when this gets too big
 
+// configs
 const PLAYER_CONFIG = {
     size: 1,
     position: {
@@ -21,9 +21,24 @@ const createPlayer = (scene: Scene): Mesh => { // Should return a player mesh
     return player
 }
 
+const setupCamera = (scene: Scene, canvas: HTMLCanvasElement, target: Mesh): UniversalCamera => {
+    const camera = new UniversalCamera("camera", new Vector3(0, 0, -10), scene);
+    camera.attachControl(canvas, true);
+    camera.setTarget(target.position);
 
-const CreateBasicScene = () => {
+    return camera
+}
+
+const setupLight = (scene: Scene): HemisphericLight => {
+    const light = new HemisphericLight("light", new Vector3(0, 20, 0), scene);
+    light.intensity = 0.7;
+    return light;
+}
+
+
+const CreateBasicScene = (): HTMLCanvasElement => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
+
 
     useEffect(() => {
         const canvas = reactCanvas.current; // Get the canvas element
@@ -36,28 +51,19 @@ const CreateBasicScene = () => {
         const scene = new Scene(engine) // Create a new scene
 
         const player = createPlayer(scene)
-        const playerInput = new UniversalCamera("playerInput", new Vector3(0, 0, 0), scene)
-        playerInput.attachControl(canvas, true)
-        playerInput.setTarget(player.position)
-
-
-        // const camera = new UniversalCamera("camera", new Vector3(4, 15, -20), scene) // Create a new camera | UniversalCamera is a camera that can be controlled by the mouse and arrow keys and gamepad which could be interesting
-        // camera.setTarget(Vector3.Zero()) // Set the target of the camera to x/y/z 0/0/0
-        // camera.attachControl(canvas, true)
-
-        const light = new HemisphericLight("light", new Vector3(0, 20, 0), scene) // Create a new light
-        light.intensity = 0.7 // From 0 to 1
+        setupCamera(scene, canvas, player)
+        setupLight(scene)
         
-        const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene) // Create a sphere
+        const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene) 
         sphere.position.y = 20
 
         
-        const box = MeshBuilder.CreateBox("box", { size: 2 }, scene) // Create a box
+        const box = MeshBuilder.CreateBox("box", { size: 2 }, scene) 
         box.position.y = 1
 
         MeshBuilder.CreateGround(
             "ground",
-            { width: 25, height: 12 },
+            { width: 125, height: 121 },
             scene
         )
 
