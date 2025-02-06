@@ -1,5 +1,6 @@
-import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Mesh, Color4 } from "@babylonjs/core"
+import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Texture, Color4, StandardMaterial } from "@babylonjs/core"
 import { useRef, useEffect } from "react"
+
 
 // TODO: handle movement | Need a control scheme that's easy to use for the player WASD and mouse only
 // TODO: Add a camera to the player
@@ -8,6 +9,9 @@ import { useRef, useEffect } from "react"
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
 // https://www.youtube.com/watch?v=npt_oXGTLfg
+
+// TEXTURES
+// https://polyhaven.com/a/rocky_terrain_02 | Covered under CC0 license 
 
 // configs
 const SCENE_CONFIG = {
@@ -82,6 +86,39 @@ const setupScene = (engine: Engine): Scene => {
 const CreateEnvironment = () => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
+    const createGroundMaterial = (scene: Scene): StandardMaterial => {
+        const material = new StandardMaterial("groundMaterial", scene);
+        const uvScale = 4;
+        const textueArray: Texture[] = [];
+        
+        const diffuseTexture = new Texture("/textures/rocky_terrain/rocky_terrain_diffuse.jpg", scene);
+        material.diffuseTexture = diffuseTexture;
+        textueArray.push(diffuseTexture);
+
+        const normalTexture = new Texture("/textures/rocky_terrain/rocky_terrain_normal.jpg", scene);
+        material.bumpTexture = normalTexture; 
+        textueArray.push(normalTexture);
+
+        const aoTexture = new Texture("/textures/rocky_terrain/rocky_terrain_ao.jpg", scene);
+        material.ambientTexture = aoTexture;
+        textueArray.push(aoTexture);
+
+        const specularTexture = new Texture("/textures/rocky_terrain/rocky_terrain_spec.jpg", scene);
+        material.specularTexture = specularTexture;
+        textueArray.push(specularTexture);
+
+        textueArray.forEach(texture => {
+            texture.uScale = uvScale;
+            texture.vScale = uvScale;
+        });
+
+
+
+        return material;
+
+
+    }
+
     useEffect(() => {
         const canvas = reactCanvas.current; // Get the canvas element
         if (!canvas) {
@@ -110,6 +147,7 @@ const CreateEnvironment = () => {
             scene
         );
         ground.checkCollisions = true;
+        ground.material = createGroundMaterial(scene);
 
         engine.runRenderLoop(() => { 
             scene.render() // Render the scene
