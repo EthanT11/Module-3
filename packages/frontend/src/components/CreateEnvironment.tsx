@@ -1,11 +1,6 @@
 import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Texture, Color4, StandardMaterial } from "@babylonjs/core"
 import { useRef, useEffect } from "react"
 
-
-// TODO: handle movement | Need a control scheme that's easy to use for the player WASD and mouse only
-// TODO: Add a camera to the player
-// TODO: Start factoring out the scene props when this gets too big
-
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
 // https://www.youtube.com/watch?v=npt_oXGTLfg
@@ -34,61 +29,103 @@ const SCENE_CONFIG = {
 
 
 const setupCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalCamera => {
-    const camera = new UniversalCamera(
-        "camera", 
-        SCENE_CONFIG.CAMERA_CONFIG.position,
-        scene
-    );
-    camera.attachControl(canvas, true);
-
-    camera.applyGravity = true;
-    camera.checkCollisions = true;
-    camera.ellipsoid = new Vector3(1, 1, 1); // Collision box of the camera
+    try {
+        const camera = new UniversalCamera(
+            "camera", 
+            SCENE_CONFIG.CAMERA_CONFIG.position,
+            scene
+        );
+        camera.attachControl(canvas, true);
     
-    camera.minZ = 0.1; // Helps with camera clipping
-    camera.speed = SCENE_CONFIG.CAMERA_CONFIG.speed;
+        camera.applyGravity = true;
+        camera.checkCollisions = true;
+        camera.ellipsoid = new Vector3(1, 1, 1); // Collision box of the camera
+        
+        camera.minZ = 0.1; // Helps with camera clipping
+        camera.speed = SCENE_CONFIG.CAMERA_CONFIG.speed;
+    
+        camera.keysUp = [87]; // W
+        camera.keysDown = [83]; // S
+        camera.keysLeft = [65]; // A
+        camera.keysRight = [68]; // D
 
-    camera.keysUp = [87]; // W
-    camera.keysDown = [83]; // S
-    camera.keysLeft = [65]; // A
-    camera.keysRight = [68]; // D
-
-    return camera;
+        console.log("Camera setup complete");
+        return camera;
+    } catch (error) {
+        console.error("Error setting up camera:", error);
+        throw error;
+        
+    }
 }
+
 
 const setupLight = (scene: Scene): HemisphericLight => {
-    const light = new HemisphericLight("light", SCENE_CONFIG.LIGHT_CONFIG.position, scene);
-    light.intensity = SCENE_CONFIG.LIGHT_CONFIG.intensity;
+    try {
+        const light = new HemisphericLight("light", SCENE_CONFIG.LIGHT_CONFIG.position, scene);
+        light.intensity = SCENE_CONFIG.LIGHT_CONFIG.intensity;
 
-    return light;
+        console.log("Light setup complete");
+        return light;
+    } catch (error) {
+        console.error("Error setting up light:", error);
+        throw error;
+    }
 }
+
 
 const setupScene = (engine: Engine): Scene => {
-    const scene = new Scene(engine); // Create a new scene
-    scene.clearColor = new Color4(0.5, 0.5, 0.5, 1);
-    scene.gravity = new Vector3(0, SCENE_CONFIG.GRAVITY/SCENE_CONFIG.FPS, 0); // Gravity in babylong is measured in units/frame
-    
-    scene.onPointerDown = (event) => { // 0 left click, 1 middle click, 2 right click
-        if (event.button === 0) { // Lock the camera to the player when they left click the screen
-            engine.enterPointerlock();
-        }
-        if (event.button === 1) { // Unlock the camera when they middle mouse click the screen
-            engine.exitPointerlock();
-        }
+    try {
+        const scene = new Scene(engine); // Create a new scene
+        scene.clearColor = new Color4(0.5, 0.5, 0.5, 1);
+        scene.gravity = new Vector3(0, SCENE_CONFIG.GRAVITY/SCENE_CONFIG.FPS, 0); // Gravity in babylong is measured in units/frame
+        scene.onPointerDown = (event) => { // 0 left click, 1 middle click, 2 right click
+            if (event.button === 0) { // Lock the camera to the player when they left click the screen
+                engine.enterPointerlock();
+            }
+            if (event.button === 1) { // Unlock the camera when they middle mouse click the screen
+                engine.exitPointerlock();
+                }
+            }
+        console.log("Scene setup complete");
+        return scene;
+    } catch (error) {
+        console.error("Error setting up scene:", error);
+        throw error;
     }
-
-    return scene;
 }
 
 
+const setupObjects = (scene: Scene): void => {
+    try {
+        const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene) 
+        sphere.position.y = 20 // Same as the light
+        
+
+        const box = MeshBuilder.CreateBox("box", { size: 2 }, scene) 
+        box.position.y = 1
+        box.checkCollisions = true;
+
+        const ground = MeshBuilder.CreateGround(
+            "ground",
+            SCENE_CONFIG.GROUND_CONFIG,
+            scene
+        );
+        ground.checkCollisions = true;
+        ground.material = createGroundMaterial(scene);
+
+        console.log("Objects loaded");
+    } catch (error) {
+        console.error("Error setting up objects:", error);
+        throw error;
+    }
+}
 
 
-const CreateEnvironment = () => {
-    const reactCanvas = useRef(null); // Use useRef to store the canvas element
-
-    const createGroundMaterial = (scene: Scene): StandardMaterial => {
+const createGroundMaterial = (scene: Scene): StandardMaterial => {
+    // TODO: Look into cleaning up this function
+    try {
         const material = new StandardMaterial("groundMaterial", scene);
-        const uvScale = 4;
+        const uvScale = 4; // Scale of the texture
         const textueArray: Texture[] = [];
         
         const diffuseTexture = new Texture("/textures/rocky_terrain/rocky_terrain_diffuse.jpg", scene);
@@ -107,23 +144,28 @@ const CreateEnvironment = () => {
         material.specularTexture = specularTexture;
         textueArray.push(specularTexture);
 
-        textueArray.forEach(texture => {
+        textueArray.forEach(texture => { // Apply scale to each texture
             texture.uScale = uvScale;
-            texture.vScale = uvScale;
-        });
-
-
+                texture.vScale = uvScale;
+            });
 
         return material;
-
-
+    } catch (error) {
+        console.error("Error setting up ground material:", error);
+        throw error;
     }
+}
+
+
+const CreateEnvironment = () => {
+    // TODO: Look into better error handling for the engine and canvas
+    const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
     useEffect(() => {
         const canvas = reactCanvas.current; // Get the canvas element
         if (!canvas) {
-            console.error("CreateBasicScene: Canvas not found")
-            return
+            console.error("CreateEnvironment: Canvas not found")
+            return;
         }
 
         // Init
@@ -132,22 +174,7 @@ const CreateEnvironment = () => {
 
         setupLight(scene);
         setupCamera(scene, canvas)
-
-        // Objects
-        const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene) 
-        sphere.position.y = 20 // Same as the light
-        
-        const box = MeshBuilder.CreateBox("box", { size: 2 }, scene) 
-        box.position.y = 1
-        box.checkCollisions = true;
-
-        const ground = MeshBuilder.CreateGround(
-            "ground",
-            SCENE_CONFIG.GROUND_CONFIG,
-            scene
-        );
-        ground.checkCollisions = true;
-        ground.material = createGroundMaterial(scene);
+        setupObjects(scene);
 
         engine.runRenderLoop(() => { 
             scene.render() // Render the scene
@@ -164,7 +191,6 @@ const CreateEnvironment = () => {
     }, [])
 
     return <canvas ref={reactCanvas} style={{ width: "100%", height: "100vh" }} />
-
 };
 
 export default CreateEnvironment;
