@@ -64,9 +64,18 @@ const setupLight = (scene: Scene): HemisphericLight => {
     return light;
 }
 
+const setupScene = (engine: Engine): Scene => {
+    const scene = new Scene(engine); // Create a new scene
+    scene.clearColor = new Color4(0.5, 0.5, 0.5, 1);
+    scene.gravity = new Vector3(0, GRAVITY/FPS, 0); // Gravity in babylong is measured in units/frame
+
+    return scene;
+}
 
 
-const CreateBasicScene = () => {
+
+
+const CreateEnvironment = () => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
     useEffect(() => {
@@ -78,19 +87,27 @@ const CreateBasicScene = () => {
 
         // Init
         const engine = new Engine(canvas, true) // First argument is the canvas element, second argument is antialiasing
+        const scene = setupScene(engine);
 
-        const scene = new Scene(engine) // Create a new scene
-        scene.clearColor = new Color4(0.5, 0.5, 0.5, 1);
-        scene.gravity = new Vector3(0, GRAVITY/FPS, 0); // Gravity in babylong is measured in units/frame
-
-        setupLight(scene)
+        setupLight(scene);
         setupCamera(scene, canvas)
+
+        scene.onPointerDown = (event) => { // 0 left click, 1 middle click, 2 right click
+            if (event.button === 0) { // Lock the camera to the player when they left click the screen
+                engine.enterPointerlock();
+            }
+            if (event.button === 1) { // Unlock the camera when they middle mouse click the screen
+                engine.exitPointerlock();
+            }
+        }
+
 
         // Objects
         const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene) 
         sphere.position.y = 20 // Same as the light
         
         const box = MeshBuilder.CreateBox("box", { size: 2 }, scene) 
+
         box.position.y = 1
         box.checkCollisions = true;
 
@@ -122,4 +139,4 @@ const CreateBasicScene = () => {
 
 };
 
-export default CreateBasicScene;
+export default CreateEnvironment;

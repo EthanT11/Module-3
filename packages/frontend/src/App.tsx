@@ -1,8 +1,8 @@
 import "./App.css";
-import CreateBasicScene from "./components/BasicScene";
+import CreateEnvironment from "./components/CreateEnvironment";
 
 export default () => (
   <div>
-    <CreateBasicScene />
+    <CreateEnvironment />
   </div>
 );
