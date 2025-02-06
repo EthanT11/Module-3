@@ -11,10 +11,12 @@ import { useRef, useEffect } from "react"
 
 // configs
 const SCENE_CONFIG = {
-    PLAYER_CONFIG: {
-        position: new Vector3(4, 1, 0),
-        size: 1,
-        speed: 0.1,
+    FPS: 60,
+    GRAVITY: -9.81,
+
+    CAMERA_CONFIG: {
+        position: new Vector3(0, 10, 0),
+        speed: 0.50,
     },
     GROUND_CONFIG: {
         width: 125,
@@ -24,35 +26,28 @@ const SCENE_CONFIG = {
         intensity: 0.8, // 0 to 1
         position: new Vector3(0, 20, 0),
     },
-
 }
 
-const GRAVITY = -9.81;
-const FPS = 60;
-
-// const createPlayer = (scene: Scene): Mesh => { // Should return a player mesh
-//     const player = MeshBuilder.CreateBox("player", { size: SCENE_CONFIG.PLAYER_CONFIG.size}, scene);
-//     player.position.y = SCENE_CONFIG.PLAYER_CONFIG.position.y;
-//     player.position.x = SCENE_CONFIG.PLAYER_CONFIG.position.x;
-
-//     player.isVisible = true; // Hide the player mesh
-
-//     return player
-// }
 
 const setupCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalCamera => {
     const camera = new UniversalCamera(
         "camera", 
-        new Vector3(1, 1, 1), // Start position of the camera
+        SCENE_CONFIG.CAMERA_CONFIG.position,
         scene
     );
-
     camera.attachControl(canvas, true);
+
     camera.applyGravity = true;
     camera.checkCollisions = true;
     camera.ellipsoid = new Vector3(1, 1, 1); // Collision box of the camera
+    
     camera.minZ = 0.1; // Helps with camera clipping
+    camera.speed = SCENE_CONFIG.CAMERA_CONFIG.speed;
 
+    camera.keysUp = [87]; // W
+    camera.keysDown = [83]; // S
+    camera.keysLeft = [65]; // A
+    camera.keysRight = [68]; // D
 
     return camera;
 }
@@ -67,7 +62,16 @@ const setupLight = (scene: Scene): HemisphericLight => {
 const setupScene = (engine: Engine): Scene => {
     const scene = new Scene(engine); // Create a new scene
     scene.clearColor = new Color4(0.5, 0.5, 0.5, 1);
-    scene.gravity = new Vector3(0, GRAVITY/FPS, 0); // Gravity in babylong is measured in units/frame
+    scene.gravity = new Vector3(0, SCENE_CONFIG.GRAVITY/SCENE_CONFIG.FPS, 0); // Gravity in babylong is measured in units/frame
+    
+    scene.onPointerDown = (event) => { // 0 left click, 1 middle click, 2 right click
+        if (event.button === 0) { // Lock the camera to the player when they left click the screen
+            engine.enterPointerlock();
+        }
+        if (event.button === 1) { // Unlock the camera when they middle mouse click the screen
+            engine.exitPointerlock();
+        }
+    }
 
     return scene;
 }
@@ -92,22 +96,11 @@ const CreateEnvironment = () => {
         setupLight(scene);
         setupCamera(scene, canvas)
 
-        scene.onPointerDown = (event) => { // 0 left click, 1 middle click, 2 right click
-            if (event.button === 0) { // Lock the camera to the player when they left click the screen
-                engine.enterPointerlock();
-            }
-            if (event.button === 1) { // Unlock the camera when they middle mouse click the screen
-                engine.exitPointerlock();
-            }
-        }
-
-
         // Objects
         const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene) 
         sphere.position.y = 20 // Same as the light
         
         const box = MeshBuilder.CreateBox("box", { size: 2 }, scene) 
-
         box.position.y = 1
         box.checkCollisions = true;
 
@@ -116,9 +109,7 @@ const CreateEnvironment = () => {
             SCENE_CONFIG.GROUND_CONFIG,
             scene
         );
-
         ground.checkCollisions = true;
-
 
         engine.runRenderLoop(() => { 
             scene.render() // Render the scene
@@ -131,7 +122,6 @@ const CreateEnvironment = () => {
         return () => {
             engine.dispose() // Dispose of the engine when the component unmounts | This is for clean up and memory management
         }
-
 
     }, [])
 
