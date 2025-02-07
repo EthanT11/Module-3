@@ -1,5 +1,6 @@
-import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Texture, Color4, StandardMaterial } from "@babylonjs/core"
+import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Texture, Color3, Color4, StandardMaterial, Mesh } from "@babylonjs/core"
 import { Client } from "colyseus.js";
+import { MyRoomState } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
 import { useRef, useEffect } from "react"
 
 // RESOURCES
@@ -174,18 +175,53 @@ const CreateEnvironment = () => {
         const engine = new Engine(canvas, true) // First argument is the canvas element, second argument is antialiasing
         const scene = setupScene(engine);
 
+        // Colyseus connection
+        // TODO: Fix type errors when I figure out the types
+        let playerEntities: { [key: string]: Mesh } = {};
         const colyseusClient = new Client("ws://localhost:2567");
-
         colyseusClient
             .joinOrCreate("my_room")
+
+
             .then(room => {
-                console.log("Joined room", room);
+                const roomState = room.state as MyRoomState;
+                roomState.players.onAdd((player, sessionId) => {
+                    console.log("Player joined", player, sessionId);
+
+
+                    const sphere = MeshBuilder.CreateSphere(`player-${sessionId}`, { segments: 8, diameter: 40 }, scene); 
+                    sphere.position.set(player.x, player.y, player.z);
+
+                    roomState.players.onAdd((player, sessionId) => {
+                        let isCurrentPlayer = sessionId === room.sessionId;
+                        const material = new StandardMaterial(`player-${sessionId}`, scene);
+                        sphere.material = material;
+
+
+                        if (isCurrentPlayer) {
+                            material.emissiveColor = Color3.FromHexString("#ff9900");
+                        } else {
+                            material.diffuseColor = Color3.Gray();
+                        }
+
+                    })
+                    
+                    roomState.players.onRemove((player, sessionId) => {
+                        sphere.dispose();
+                        playerEntities[sessionId].dispose();
+                        delete playerEntities[sessionId];
+                    })
+
+                })
             })
+
+
             .catch(error => {
                 console.error("Error joining room:", error);
             });
 
-
+        
+        // Scene setup
         setupLight(scene);
         setupCamera(scene, canvas)
         setupObjects(scene);
