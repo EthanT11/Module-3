@@ -1,4 +1,5 @@
 import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Texture, Color4, StandardMaterial } from "@babylonjs/core"
+import { Client } from "colyseus.js";
 import { useRef, useEffect } from "react"
 
 // RESOURCES
@@ -172,6 +173,18 @@ const CreateEnvironment = () => {
         // Init
         const engine = new Engine(canvas, true) // First argument is the canvas element, second argument is antialiasing
         const scene = setupScene(engine);
+
+        const colyseusClient = new Client("ws://localhost:2567");
+
+        colyseusClient
+            .joinOrCreate("my_room")
+            .then(room => {
+                console.log("Joined room", room);
+            })
+            .catch(error => {
+                console.error("Error joining room:", error);
+            });
+
 
         setupLight(scene);
         setupCamera(scene, canvas)
