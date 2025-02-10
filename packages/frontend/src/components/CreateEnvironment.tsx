@@ -16,7 +16,6 @@ const SCENE_CONFIG = {
     GRAVITY: -9.81,
 
     CAMERA_CONFIG: {
-        position: new Vector3(0, 10, 0),
         speed: 0.50,
     },
     GROUND_CONFIG: {
@@ -30,11 +29,12 @@ const SCENE_CONFIG = {
 }
 
 
+
 const setupCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalCamera => {
     try {
         const camera = new UniversalCamera(
             "camera", 
-            SCENE_CONFIG.CAMERA_CONFIG.position,
+            new Vector3(0, 10, 0),
             scene
         );
         camera.attachControl(canvas, true);
