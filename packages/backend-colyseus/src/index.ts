@@ -11,5 +11,5 @@
 import { listen } from "@colyseus/tools";
 import appConfig from "./app.config";
 
-const port = Number(process.env.PORT) || 8080;
+const port = Number(process.env.PORT) || 2567;
 listen(appConfig, port);
