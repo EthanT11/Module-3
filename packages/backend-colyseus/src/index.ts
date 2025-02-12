@@ -9,29 +9,7 @@
  * See: https://docs.colyseus.io/server/api/#constructor-options
  */
 import { listen } from "@colyseus/tools";
-import cors from "cors";
-import express from "express";
-import { monitor } from "@colyseus/monitor";
+import appConfig from "./app.config";
 
-// Import Colyseus config
-import app from "./app.config";
-
-// Import express
-const expressApp = express();
-
-// Add CORS to express app
-expressApp.use(cors());
-expressApp.options("*", cors());
-
-// Add routes to express app
-expressApp.get("/", (req, res) => {
-  res.send("Colyseus Server Running");
-});
-
-// Add monitor to express app
-expressApp.use("/colyseus", monitor());
-
-// Create and listen on 2567 (or PORT environment variable.)
-const port = Number(process.env.PORT) || 2567;
-listen(app, port);
-console.log(`Listening on port ${port}`);
+const port = Number(process.env.PORT) || 8080;
+listen(appConfig, port);
