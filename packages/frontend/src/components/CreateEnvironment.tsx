@@ -188,7 +188,6 @@ const CreateEnvironment = () => {
           ? `wss://${import.meta.env.VITE_BACKEND_URL}` 
           : "ws://localhost:2567";
 
-        console.log("Connecting to backend at:", BACKEND_URL);
         const colyseusClient = new Client(BACKEND_URL);
         colyseusClient
             .joinOrCreate("my_room")
