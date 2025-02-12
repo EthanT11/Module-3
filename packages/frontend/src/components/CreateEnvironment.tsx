@@ -184,7 +184,11 @@ const CreateEnvironment = () => {
         let playerSphere: Mesh | null = null; // Store ref to the player sphere
 
         // Colyseus connection
-        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "ws://localhost:2567";
+        const BACKEND_URL = import.meta.env.PROD 
+          ? `wss://${import.meta.env.VITE_BACKEND_URL}` 
+          : "ws://localhost:2567";
+
+        console.log("Connecting to backend at:", BACKEND_URL); // Debug log
         const colyseusClient = new Client(BACKEND_URL);
         colyseusClient
             .joinOrCreate("my_room")
