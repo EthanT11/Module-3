@@ -9,9 +9,18 @@
  * See: https://docs.colyseus.io/server/api/#constructor-options
  */
 import { listen } from "@colyseus/tools";
+import cors from "cors";
+import express from "express";
 
 // Import Colyseus config
 import app from "./app.config";
+
+// Create Express app
+const expressApp = express();
+expressApp.use(cors({
+  origin: ["https://idyllic-biscuit-59d1a9.netlify.app/", "http://localhost:5173"],
+  credentials: true
+}));
 
 // Create and listen on 2567 (or PORT environment variable.)
 listen(app);

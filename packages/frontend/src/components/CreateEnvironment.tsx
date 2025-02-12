@@ -181,9 +181,11 @@ const CreateEnvironment = () => {
         setupObjects(scene);
         const camera = setupCamera(scene, canvas);
 
-        // Colyseus connection
         let playerSphere: Mesh | null = null; // Store ref to the player sphere
-        const colyseusClient = new Client("ws://localhost:2567"); // TODO: Make this a variable
+
+        // Colyseus connection
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "ws://localhost:2567";
+        const colyseusClient = new Client(BACKEND_URL);
         colyseusClient
             .joinOrCreate("my_room")
             .then(room => {

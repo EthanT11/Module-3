@@ -7,11 +7,12 @@
 		"start:client": "npm run dev -w client"
 	},
 	"devDependencies": {
+		"@rollup/rollup-linux-x64-gnu": "latest",
+		"@types/cors": "^2.8.17",
 		"@types/node": "^22.12.0",
-		"typescript": "^5.7.3",
-		"ts-node": "^10.9.2",
 		"concurrently": "^8.2.0",
-		"@rollup/rollup-linux-x64-gnu": "latest"
+		"ts-node": "^10.9.2",
+		"typescript": "^5.7.3"
 	},
 	"workspaces": [
 		"packages/*"
