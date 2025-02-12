@@ -11,24 +11,27 @@
 import { listen } from "@colyseus/tools";
 import cors from "cors";
 import express from "express";
+import { monitor } from "@colyseus/monitor";
 
 // Import Colyseus config
 import app from "./app.config";
 
-// Create Express app
+// Import express
 const expressApp = express();
-expressApp.use(cors({
-  origin: ["https://idyllic-biscuit-59d1a9.netlify.app", "http://localhost:5173"],
-  credentials: true
-}));
 
-// Add a root route handler
+// Add CORS to express app
+expressApp.use(cors());
+expressApp.options("*", cors());
+
+// Add routes to express app
 expressApp.get("/", (req, res) => {
-  res.json({ status: "Colyseus server is running" });
+  res.send("Colyseus Server Running");
 });
+
+// Add monitor to express app
+expressApp.use("/colyseus", monitor());
 
 // Create and listen on 2567 (or PORT environment variable.)
 const port = Number(process.env.PORT) || 2567;
 listen(app, port);
-
 console.log(`Listening on port ${port}`);
