@@ -18,8 +18,8 @@ export default config({
     },
 
     initializeExpress: (app) => {
-        app.use(cors());
-        app.get("/", (req, res) => {
+        app.use(cors()); // cors is used to allow cross-origin requests |
+        app.get("/", (req, res) => { // Root route to test if the server is running
             res.send("Colyseus Server Running");
         });
         /**
@@ -43,6 +43,7 @@ export default config({
          * It is recommended to protect this route with a password
          * Read more: https://docs.colyseus.io/tools/monitor/#restrict-access-to-the-panel-using-a-password
          */
+        // TODO: Protect the monitor with a password
         app.use("/colyseus", monitor());
     },
 

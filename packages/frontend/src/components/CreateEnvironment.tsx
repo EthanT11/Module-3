@@ -1,6 +1,8 @@
 import { Engine, Scene, Vector3, HemisphericLight, UniversalCamera, MeshBuilder, Texture, Color4, StandardMaterial } from "@babylonjs/core"
 import { useRef, useEffect } from "react"
 import { setupMultiplayer } from "./networking/setupMultiplayer";
+import { setupCamera } from "./setup/setupCamera";
+import { SCENE_CONFIG } from "./config";
 
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
@@ -9,56 +11,12 @@ import { setupMultiplayer } from "./networking/setupMultiplayer";
 // TEXTURES
 // https://polyhaven.com/a/rocky_terrain_02 | Covered under CC0 license 
 
-// configs
-const SCENE_CONFIG = {
-    FPS: 60,
-    GRAVITY: -9.81,
-
-    CAMERA_CONFIG: {
-        speed: 0.50,
-    },
-    GROUND_CONFIG: {
-        width: 200,
-        height: 200,
-    },
-    LIGHT_CONFIG: {
-        intensity: 0.8, // 0 to 1
-        position: new Vector3(0, 20, 0),
-    },
-}
-
-
-
-const setupCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalCamera => {
-    try {
-        const camera = new UniversalCamera(
-            "camera", 
-            new Vector3(0, 10, 0),
-            scene
-        );
-        camera.attachControl(canvas, true);
-    
-        camera.applyGravity = true;
-        camera.checkCollisions = true;
-        camera.ellipsoid = new Vector3(1, 1, 1); // Collision box of the camera
-        
-        camera.minZ = 0.1; // Helps with camera clipping
-        camera.speed = SCENE_CONFIG.CAMERA_CONFIG.speed;
-        
-        // Controls
-        camera.keysUp = [87]; // W
-        camera.keysDown = [83]; // S
-        camera.keysLeft = [65]; // A
-        camera.keysRight = [68]; // D
-
-        console.log("Camera setup complete");
-        return camera;
-    } catch (error) {
-        console.error("Error setting up camera:", error);
-        throw error;
-        
-    }
-}
+// TODOS:
+// - Add a skybox
+// - Add a UI
+// - Add a player model
+// - Add hands to screen
+// - Add better movement | Sprinting, jumping, climbing?
 
 
 const setupLight = (scene: Scene): HemisphericLight => {
@@ -180,7 +138,7 @@ const CreateEnvironment = () => {
         setupObjects(scene);
         const camera = setupCamera(scene, canvas);
 
-        setupMultiplayer(scene, camera);
+        const { playerSphere } = setupMultiplayer(scene, camera); // Get the player sphere from the multiplayer setup
 
         engine.runRenderLoop(() => { 
             scene.render() // Render the scene
