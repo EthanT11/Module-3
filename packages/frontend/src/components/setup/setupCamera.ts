@@ -48,14 +48,13 @@ const handlePlayerMovement = (camera: UniversalCamera, scene: Scene) => {
         
         // console.log("Vertical Velocity: ", verticalVelocity)
         // console.log("Gravity: ", scene.gravity.y)
+        // console.log(scene.getEngine().getFps())
         camera.position.y += verticalVelocity;
 
-        console.log(scene.getEngine().getFps())
         // if camera is below the ground threshhold | Will defenitely have to change this but it works for now.
         if (camera.position.y <= 2.1) { 
             camera.position.y = 2.1; // reset camera to the ground
             if (isJumping || verticalVelocity < 0) {
-                console.log("landed")
                 isJumping = false;
                 jumpCount = 0;
                 verticalVelocity = 0;

@@ -6,6 +6,7 @@ import { setupLight } from "./setup/setupLight";
 import { setupScene } from "./setup/setupScene";
 import { setupObjects } from "./setup/setupObjects";
 import { SCENE_CONFIG } from "./config";
+
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
 // https://www.youtube.com/watch?v=npt_oXGTLfg
@@ -34,21 +35,33 @@ const CreateEnvironment = () => {
         // Init
         const engine = new Engine(canvas, SCENE_CONFIG.ANTIALIASING)
         engine.setHardwareScalingLevel(1.0); // Helps with performance on low end devices
-        engine.maxFPS = SCENE_CONFIG.MAX_FPS; 
+        engine.maxFPS = SCENE_CONFIG.MAX_FPS;
 
-        // Scene setup
-        const scene = setupScene(engine);
-        
-        // Scene setup
-        setupLight(scene);
-        setupObjects(scene);
-        const camera = setupCamera(scene, canvas);
+        // Engine built in loading screen
+        engine.loadingScreen.displayLoadingUI();
+        engine.loadingScreen.loadingUIBackgroundColor = "white";
 
-        const { playerSphere } = setupMultiplayer(scene, camera); // Get the player sphere from the multiplayer setup
+        try {
+            // Scene setup
+            const scene = setupScene(engine);
+            setupLight(scene);
+            setupObjects(scene);
+            const camera = setupCamera(scene, canvas);
+            const { playerSphere } = setupMultiplayer(scene, camera); // Get the player sphere from the multiplayer setup
 
-        engine.runRenderLoop(() => { 
-            scene.render() // Render the scene
-        })
+            scene.executeWhenReady(() => {
+                // Hide the loading screen when the scene is ready
+                engine.loadingScreen.hideLoadingUI();
+
+                engine.runRenderLoop(() => { 
+                    scene.render() // Render the scene
+                })
+            })
+        } catch (error) {
+            console.error("CreateEnvironment: Error setting up scene", error);
+            engine.loadingScreen.hideLoadingUI();
+        }
+
 
         window.addEventListener("resize", () => {
             engine.resize() // Resize the engine when the window is resized
