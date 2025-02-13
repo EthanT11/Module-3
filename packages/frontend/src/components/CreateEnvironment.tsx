@@ -60,6 +60,7 @@ const CreateEnvironment = () => {
         } catch (error) {
             console.error("CreateEnvironment: Error setting up scene", error);
             engine.loadingScreen.hideLoadingUI();
+            // TODO: when we have a place to boot people if failed, this is where we do it
         }
 
 
