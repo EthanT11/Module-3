@@ -9,6 +9,7 @@ export const SCENE_CONFIG = {
 
     CAMERA_CONFIG: {
         speed: 0.50,
+        sprintSpeed: 1.00,
     },
     GROUND_CONFIG: {
         width: 200,

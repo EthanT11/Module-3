@@ -23,6 +23,22 @@ export const setupCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalC
         camera.keysLeft = [65]; // A
         camera.keysRight = [68]; // D
 
+        // Handle sprinting
+        let isSprinting = false;
+        scene.onKeyboardObservable.add((kb) => {
+            if (kb.type === 1) { // check if key_down event
+                if (kb.event.key === "Shift") {
+                    isSprinting = true;
+                    camera.speed = SCENE_CONFIG.CAMERA_CONFIG.sprintSpeed;
+                }
+            } else if (kb.type === 2) { // check if key_up event
+                if (kb.event.key === "Shift") {
+                    isSprinting = false;
+                    camera.speed = SCENE_CONFIG.CAMERA_CONFIG.speed;
+                }
+            }
+        });
+
         console.log("Camera setup complete");
         return camera;
     } catch (error) {
