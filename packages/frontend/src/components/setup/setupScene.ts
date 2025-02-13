@@ -5,7 +5,10 @@ export const setupScene = (engine: Engine): Scene => {
     try {
         const scene = new Scene(engine); // Create a new scene
         scene.clearColor = new Color4(0.5, 0.5, 0.5, 1);
-        scene.gravity = new Vector3(0, SCENE_CONFIG.GRAVITY/SCENE_CONFIG.FPS, 0); // Gravity in babylong is measured in units/frame
+        
+        scene.gravity = new Vector3(0, SCENE_CONFIG.GRAVITY, 0); // Gravity in babylon is measured in units/frame
+        scene.collisionsEnabled = true;
+
         scene.onPointerDown = (event) => { // 0 left click, 1 middle click, 2 right click
             if (event.button === 0) { // Lock the camera to the player when they left click the screen
                 engine.enterPointerlock();

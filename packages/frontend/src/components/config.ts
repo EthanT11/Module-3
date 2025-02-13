@@ -4,12 +4,16 @@ import { Vector3 } from "@babylonjs/core";
 
 // CONFIGS
 export const SCENE_CONFIG = {
-    FPS: 60,
-    GRAVITY: -9.81,
+    ANTIALIASING: true,
+    MAX_FPS: 60,
+    
+    GRAVITY: -0.4, // Closer to 0 is less gravity
 
     CAMERA_CONFIG: {
         speed: 0.50,
         sprintSpeed: 1.00,
+        maxJumps: 2,
+        jumpPower: 0.2,
     },
     GROUND_CONFIG: {
         width: 200,

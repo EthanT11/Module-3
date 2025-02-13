@@ -5,7 +5,7 @@ import { setupCamera } from "./setup/setupCamera";
 import { setupLight } from "./setup/setupLight";
 import { setupScene } from "./setup/setupScene";
 import { setupObjects } from "./setup/setupObjects";
-
+import { SCENE_CONFIG } from "./config";
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
 // https://www.youtube.com/watch?v=npt_oXGTLfg
@@ -18,7 +18,6 @@ import { setupObjects } from "./setup/setupObjects";
 // - Add a UI
 // - Add a player model
 // - Add hands to screen
-// - Add better movement | Sprinting, jumping, climbing?
 
 
 const CreateEnvironment = () => {
@@ -33,7 +32,11 @@ const CreateEnvironment = () => {
         }
 
         // Init
-        const engine = new Engine(canvas, true) // First argument is the canvas element, second argument is antialiasing
+        const engine = new Engine(canvas, SCENE_CONFIG.ANTIALIASING)
+        engine.setHardwareScalingLevel(1.0); // Helps with performance on low end devices
+        engine.maxFPS = SCENE_CONFIG.MAX_FPS; 
+
+        // Scene setup
         const scene = setupScene(engine);
         
         // Scene setup
