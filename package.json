@@ -7,7 +7,6 @@
 		"start:client": "npm run dev -w client"
 	},
 	"devDependencies": {
-		"@rollup/rollup-linux-x64-gnu": "latest",
 		"@types/cors": "^2.8.17",
 		"@types/node": "^22.12.0",
 		"concurrently": "^8.2.0",
@@ -17,11 +16,7 @@
 	"workspaces": [
 		"packages/*"
 	],
-	"dependencies": {
-		"@babylonjs/core": "^7.47.2",
-		"babylonjs-hook": "^0.1.1"
-	},
-	"npm": {
-		"force": true
+	"optionalDependencies": {
+		"@rollup/rollup-linux-x64-gnu": "latest"
 	}
 }
