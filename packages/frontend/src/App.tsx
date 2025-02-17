@@ -1,11 +1,11 @@
 import CreateEnvironment from "./components/CreateEnvironment";
 import "./App.css";
 import { useState, useEffect } from "react";
-import { Client } from "colyseus.js";
+import { Client, Room } from "colyseus.js";
+import { BACKEND_URL } from "./components/networking/setupMultiplayer";
 
 // ROOM SCREEN
 // TODO: Create serpate component
-// TODO: Fix issue where players are doubling up on join
 // TODO: Maybe show full rooms | sometimes it's nice to see activity and will fill out the roomsscreen
 // TODO: Make a way for player to join a room by typing in the room id
 // TODO: Make a way to create a room and be in a lobby with the friend instead of immediately starting the game
@@ -22,18 +22,24 @@ import { Client } from "colyseus.js";
 const RoomScreen = () => {
   const [rooms, setRooms] = useState<any[]>([]); // TODO: fix type 
   const [gameStarted, setGameStarted] = useState(false);
-  const client = new Client("ws://localhost:2567");
+  const [currentRoom, setCurrentRoom] = useState<Room>();
+
+  const colyseusClient: Client = new Client(BACKEND_URL); // Colyseus client
+  const colyseusRoomSchema: string = "my_room"; // FINDME: this is the schema for colyseus, will eventually change the name. Or make this more dynamic.
 
   useEffect(() => {
     const fetchRooms = async () => {
       if (!gameStarted) { // Fetch rooms only if game hasn't started
         try {
-          const availableRooms = await client.getAvailableRooms();
+          const availableRooms = await colyseusClient.getAvailableRooms();
           setRooms(availableRooms);
           
+          // NOTE: This is a temporary solution to create a new room if no rooms are open
+          // It helps with testing and development to not have to manually create a room
           if (availableRooms.length === 0) { // If no rooms are open, create a new room 
-            const newRoom = await client.create("my_room"); // FINDME: this is the schema for colyseus, will eventually change the name. Or make this more dynamic.
+            const newRoom = await colyseusClient.create(colyseusRoomSchema);
             console.log("Created new room:", newRoom);
+            setCurrentRoom(newRoom);
             setGameStarted(true);
           }
         } catch (error) {
@@ -53,20 +59,27 @@ const RoomScreen = () => {
     return () => {
       clearInterval(interval)
     };
-  }, [gameStarted]);
+  }, [gameStarted, currentRoom]);
 
+  // Join a room
   const handleJoinRoom = async (roomId: string) => {
+    if (currentRoom) { 
+      await currentRoom.leave(); // Disconnect from the current room before joining a new one
+    }
+
     try {
-      const room = await client.joinById(roomId);
+      const room = await colyseusClient.joinById(roomId);
       console.log("Joined room:", room);
+
+      setCurrentRoom(room);
       setGameStarted(true);
     } catch (error) {
       console.error("Error joining room:", error);
     }
   };
 
-  if (gameStarted) {
-    return <CreateEnvironment />;
+  if (gameStarted && currentRoom) { // Entry point for the game 
+    return <CreateEnvironment room={currentRoom} />;
   }
 
   return (
