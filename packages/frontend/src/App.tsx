@@ -26,26 +26,34 @@ const RoomScreen = () => {
 
   useEffect(() => {
     const fetchRooms = async () => {
-      try {
-        const availableRooms = await client.getAvailableRooms();
-        setRooms(availableRooms);
-        console.log(availableRooms);
-        
-        if (availableRooms.length === 0) { // If no rooms are open, create a new room 
-          const newRoom = await client.create("my_room"); // FINDME: this is the schema for colyseus, will eventually change the name. Or make this more dynamic.
-          console.log("Created new room:", newRoom);
-          setGameStarted(true);
+      if (!gameStarted) { // Fetch rooms only if game hasn't started
+        try {
+          const availableRooms = await client.getAvailableRooms();
+          setRooms(availableRooms);
+          
+          if (availableRooms.length === 0) { // If no rooms are open, create a new room 
+            const newRoom = await client.create("my_room"); // FINDME: this is the schema for colyseus, will eventually change the name. Or make this more dynamic.
+            console.log("Created new room:", newRoom);
+            setGameStarted(true);
+          }
+        } catch (error) {
+          console.error('Error fetching/creating rooms:', error);
         }
-      } catch (error) {
-        console.error('Error fetching/creating rooms:', error);
+      };
       }
-    };
 
+      fetchRooms();
+      
     // Check for rooms every 5 seconds
-    fetchRooms();
-    const interval = setInterval(fetchRooms, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    let interval: NodeJS.Timeout;
+    if (!gameStarted) {
+      interval = setInterval(fetchRooms, 5000);
+    }
+    
+    return () => {
+      clearInterval(interval)
+    };
+  }, [gameStarted]);
 
   const handleJoinRoom = async (roomId: string) => {
     try {
