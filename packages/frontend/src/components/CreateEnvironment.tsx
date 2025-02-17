@@ -1,4 +1,5 @@
 import { Engine } from "@babylonjs/core"
+import { Room } from "colyseus.js";
 import { useRef, useEffect } from "react"
 import { setupMultiplayer } from "./networking/setupMultiplayer";
 import { setupCamera } from "./setup/setupCamera";
@@ -21,7 +22,7 @@ import { SCENE_CONFIG } from "./config";
 // - Add hands to screen
 
 
-const CreateEnvironment = () => {
+const CreateEnvironment = ( {room}: {room: Room} ) => {
     // TODO: Look into better error handling for the engine and canvas
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
@@ -47,7 +48,7 @@ const CreateEnvironment = () => {
             setupLight(scene);
             setupObjects(scene);
             const camera = setupCamera(scene, canvas);
-            const { playerSphere } = setupMultiplayer(scene, camera); // Get the player sphere from the multiplayer setup
+            const { playerSphere } = setupMultiplayer(scene, camera, room); // Get the player sphere from the multiplayer setup
 
             scene.executeWhenReady(() => {
                 // Hide the loading screen when the scene is ready
