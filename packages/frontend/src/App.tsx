@@ -2,7 +2,7 @@ import CreateEnvironment from "./components/CreateEnvironment";
 import "./App.css";
 import { useState, useEffect } from "react";
 import { Client, Room } from "colyseus.js";
-import { BACKEND_URL } from "./components/networking/setupMultiplayer";
+import { BACKEND_URL } from "./networking/setupMultiplayer";
 
 // ROOM SCREEN
 // TODO: Create serpate component

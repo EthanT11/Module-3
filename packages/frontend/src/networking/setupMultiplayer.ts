@@ -1,6 +1,6 @@
 import { Scene, UniversalCamera, Mesh, StandardMaterial, MeshBuilder } from "@babylonjs/core";
 import { Room } from "colyseus.js";
-import { MyRoomState } from "../../../../backend-colyseus/src/rooms/schema/MyRoomState";
+import { MyRoomState } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
 
 export const BACKEND_URL = import.meta.env.PROD 
     ? `wss://${import.meta.env.VITE_BACKEND_URL}` // Production URL
