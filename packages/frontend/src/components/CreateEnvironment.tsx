@@ -1,5 +1,6 @@
 import { Engine } from "@babylonjs/core"
 import { Room } from "colyseus.js";
+import { createClient } from '@supabase/supabase-js'
 import { useRef, useEffect } from "react"
 import { setupMultiplayer } from "./networking/setupMultiplayer";
 import { setupCamera } from "./setup/setupCamera";
@@ -16,10 +17,30 @@ import { SCENE_CONFIG } from "./config";
 // https://polyhaven.com/a/rocky_terrain_02 | Covered under CC0 license 
 
 // TODOS:
-// - Add a skybox
 // - Add a UI
 // - Add a player model
 // - Add hands to screen
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+const supabase = createClient(
+    supabaseUrl,
+    supabaseAnonKey
+)
+
+function getTextureUrl() {
+    const { data } = supabase
+        .storage
+        .from('textures/rocky_terrain')
+        .getPublicUrl('rocky_terrain_ao.jpg')
+
+    if (!data) {
+        throw new Error(`CreateEnvironment: Error getting texture URL`)
+    }
+    
+    return data.publicUrl
+}
 
 
 const CreateEnvironment = ( {room}: {room: Room} ) => {
@@ -43,6 +64,9 @@ const CreateEnvironment = ( {room}: {room: Room} ) => {
         engine.loadingScreen.loadingUIBackgroundColor = "white";
 
         try {
+            const textureUrl = getTextureUrl()
+            console.log(`CreateEnvironment: Texture URL: ${textureUrl}`)
+
             // Scene setup
             const scene = setupScene(engine);
             setupLight(scene);
