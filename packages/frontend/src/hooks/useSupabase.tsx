@@ -1,25 +1,15 @@
-import { createClient } from "@supabase/supabase-js"
 
-
+import supabase from "../supabaseClient";
 const useSupabase = () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-    // Create a supabase client
-    const supabase = createClient(
-        supabaseUrl,
-        supabaseAnonKey
-    )
-
     // Get the texture URL
-    function getAssetUrl(from: string, fileName: string) {
+    function getAssetUrl(bucket: string, fileName: string) {
         const { data } = supabase
             .storage
-            .from(from)
+            .from(bucket)
             .getPublicUrl(fileName)
 
         if (!data) {
-            throw new Error(`useSupabase: Error getting texture URL: ${from}/${fileName}`)
+            throw new Error(`useSupabase: Error getting texture URL: ${bucket}/${fileName}`)
         }
         
         return data.publicUrl

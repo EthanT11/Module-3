@@ -1,6 +1,7 @@
 import { Scene, 
     LoadAssetContainerAsync, LoadAssetContainerOptions, 
-    MeshBuilder, StandardMaterial, CubeTexture, Texture 
+    AbstractMesh, MeshBuilder, StandardMaterial, 
+    CubeTexture, Texture 
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import { SCENE_CONFIG } from "../config";
@@ -11,6 +12,33 @@ import useSupabase from "../../hooks/useSupabase";
 // TODO: Maybe have a way to choose to load locally or from supabase
 export const setupObjects = async (scene: Scene): Promise<void> => {
     const { getAssetUrl } = useSupabase();
+    const playerModelUrl = getAssetUrl("models", "human.glb");
+    const playerMeshName = "HumanMale";
+
+    // TODO: As we add more models, we should probably move this to a separate file and make it more universal | hook
+    const loadModelContainer = async (modelUrl: string, meshName: string): Promise<AbstractMesh | undefined> => {
+        // container options
+        const containerOptions: LoadAssetContainerOptions = {
+            pluginExtension: ".glb", // Need explicit extension for glb files
+        }
+        
+        // LoadAssetContainer returns a container with all the meshes, skeletons, and animation groups
+        const modelContainer = await LoadAssetContainerAsync(
+            modelUrl,
+            scene,
+            containerOptions
+        )
+
+        // Find the mesh in the container
+        const mesh = modelContainer.meshes.find(mesh => mesh.name === meshName);
+        if (!mesh) {
+            console.error("Mesh not found: ", meshName);
+            return;
+        }
+
+        return mesh;
+    }
+
 
     try {
         // Scene objects
@@ -20,32 +48,12 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
         const box = MeshBuilder.CreateBox("box", { size: 2 }, scene); 
         box.position.x = 20
         box.checkCollisions = true;
-
-        // Load human model
-        const playerModelContainerOptions: LoadAssetContainerOptions = {
-            pluginExtension: ".glb", // Need explicit extension for glb files
-        }
-
-        // Load the model
-        const playerModelContainer = await LoadAssetContainerAsync(
-            getAssetUrl("models", "human.glb"),
-            scene,
-            playerModelContainerOptions
-        )
-
-        // Add the model to the scene | human.glb has two meshes, HumanMale and HumanFemale
-        const playerMesh = playerModelContainer.meshes.find(mesh => mesh.name === "HumanMale");
+        
+        // Load player model
+        const playerMesh = await loadModelContainer(playerModelUrl, playerMeshName);
         if (playerMesh) {
             scene.addMesh(playerMesh);
         }
-
-        console.log("Model loaded: ", {
-            meshes: playerModelContainer.meshes.length,
-            meshNames: playerModelContainer.meshes.map(mesh => mesh.name),
-            skeletons: playerModelContainer.skeletons.length,
-            animationGroups: playerModelContainer.animationGroups.length
-        });
-        
 
         // Skybox
         // https://doc.babylonjs.com/features/featuresDeepDive/environment/skybox
