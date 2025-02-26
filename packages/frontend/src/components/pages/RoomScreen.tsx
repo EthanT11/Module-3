@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Client, Room } from "colyseus.js";
 import { BACKEND_URL } from "../../networking/setupMultiplayer";
-import CreateEnvironment from "../CreateEnvironment";
+import CreateEnvironment from "../../game/CreateEnvironment";
 
 
 // ROOM SCREEN

@@ -15,11 +15,6 @@ import { SCENE_CONFIG } from "./config";
 // TEXTURES
 // https://polyhaven.com/a/rocky_terrain_02 | Covered under CC0 license 
 
-// TODOS:
-// - Add a UI
-// - Add a player model
-// - Add hands to screen
-
 const CreateEnvironment = ({ room }: { room: Room }) => {
     // TODO: Look into better error handling for the engine and canvas
     const reactCanvas = useRef(null); // Use useRef to store the canvas element

@@ -1,7 +1,7 @@
 import { Scene, 
     LoadAssetContainerAsync, LoadAssetContainerOptions, 
     AbstractMesh, MeshBuilder, StandardMaterial, 
-    CubeTexture, Texture 
+    CubeTexture, Texture, Vector3
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import { SCENE_CONFIG } from "../config";
@@ -49,12 +49,7 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
         box.position.x = 20
         box.checkCollisions = true;
         
-        // Load player model
-        const playerMesh = await loadModelContainer(playerModelUrl, playerMeshName);
-        if (playerMesh) {
-            scene.addMesh(playerMesh);
-        }
-
+        
         // Skybox
         // https://doc.babylonjs.com/features/featuresDeepDive/environment/skybox
         // https://opengameart.org/content/retro-skyboxes-pack
@@ -81,10 +76,10 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
             ]
         )
         skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-
+        
         skybox.renderingGroupId = 0;
         
-
+        
         // Floor
         const ground = MeshBuilder.CreateGround(
             "ground",
@@ -93,8 +88,16 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
         );
         ground.checkCollisions = true;
         ground.material = createGroundMaterial(scene);
-
+        
         console.log("Objects loaded");
+        // Load player model
+        const playerMesh = await loadModelContainer(playerModelUrl, playerMeshName);
+        if (playerMesh) {
+            scene.addMesh(playerMesh);
+            playerMesh.position = new Vector3(0, 0, 0);
+            playerMesh.rotation = new Vector3(0, Math.PI, 0);
+            playerMesh.checkCollisions = true;
+        }
     } catch (error) {
         console.error("Error setting up objects:", error);
         throw error;
