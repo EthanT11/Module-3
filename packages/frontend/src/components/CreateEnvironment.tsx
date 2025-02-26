@@ -20,12 +20,11 @@ import { SCENE_CONFIG } from "./config";
 // - Add a player model
 // - Add hands to screen
 
-
-const CreateEnvironment = ( {room}: {room: Room} ) => {
+const CreateEnvironment = ({ room }: { room: Room }) => {
     // TODO: Look into better error handling for the engine and canvas
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
-    useEffect(() => {
+    useEffect( () => {
         const canvas = reactCanvas.current; // Get the canvas element
         if (!canvas) {
             console.error("CreateEnvironment: Canvas not found")

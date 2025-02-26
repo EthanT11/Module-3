@@ -12,20 +12,20 @@ const useSupabase = () => {
     )
 
     // Get the texture URL
-    function getTextureUrl(from: string, fileName: string) {
+    function getAssetUrl(from: string, fileName: string) {
         const { data } = supabase
             .storage
             .from(from)
             .getPublicUrl(fileName)
 
         if (!data) {
-            throw new Error(`useSupabase: Error getting texture URL`)
+            throw new Error(`useSupabase: Error getting texture URL: ${from}/${fileName}`)
         }
         
         return data.publicUrl
     }
 
-    return { getTextureUrl }
+    return { getAssetUrl }
 }
 
 export default useSupabase;
