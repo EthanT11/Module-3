@@ -16,6 +16,7 @@ export class MyRoom extends Room<MyRoomState> {
       player.x = message.x;
       player.y = message.y;
       player.z = message.z;
+      
     });
 
     // Catch playground message types |
@@ -29,10 +30,6 @@ export class MyRoom extends Room<MyRoomState> {
     console.log(client.sessionId, "joined!");
 
     const player = new Player(); // Create a new player
-
-    player.x = Math.random() * 100;
-    player.y = 10;
-    player.z = Math.random() * 100;
 
     this.state.players.set(client.sessionId, player); // Add the player to the players map
   }

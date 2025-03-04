@@ -2,12 +2,12 @@ import { Engine } from "@babylonjs/core"
 import { Room } from "colyseus.js";
 import { useRef, useEffect } from "react"
 import { setupMultiplayer } from "../networking/setupMultiplayer";
-import { setupCamera } from "./setup/setupCamera";
+import { setupPlayerCamera } from "./player/setupPlayerCamera";
 import { setupLight } from "./setup/setupLight";
 import { setupScene } from "./setup/setupScene";
 import { setupObjects } from "./setup/setupObjects";
 import { SCENE_CONFIG } from "./config";
-
+import { setupPlayer } from "./setup/setupPlayer";
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
 // https://www.youtube.com/watch?v=npt_oXGTLfg
@@ -15,7 +15,7 @@ import { SCENE_CONFIG } from "./config";
 // TEXTURES
 // https://polyhaven.com/a/rocky_terrain_02 | Covered under CC0 license 
 
-const CreateEnvironment = ({ room }: { room: Room }) => {
+const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
     // TODO: Look into better error handling for the engine and canvas
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
@@ -40,8 +40,10 @@ const CreateEnvironment = ({ room }: { room: Room }) => {
             const scene = setupScene(engine);
             setupLight(scene);
             setupObjects(scene);
-            const camera = setupCamera(scene, canvas);
-            const { playerSphere } = setupMultiplayer(scene, camera, room); // Get the player sphere from the multiplayer setup
+            
+            const camera = setupPlayerCamera(scene, canvas);
+            setupPlayer(scene, camera);
+            setupMultiplayer(scene, camera, room);
 
             scene.executeWhenReady(() => {
                 // Hide the loading screen when the scene is ready
@@ -71,4 +73,4 @@ const CreateEnvironment = ({ room }: { room: Room }) => {
     return <canvas ref={reactCanvas} style={{ width: "100%", height: "100vh" }} />
 };
 
-export default CreateEnvironment;
+export default CreateGameEnvironment;

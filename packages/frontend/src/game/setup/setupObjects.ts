@@ -1,8 +1,4 @@
-import { Scene, 
-    LoadAssetContainerAsync, LoadAssetContainerOptions, 
-    AbstractMesh, MeshBuilder, StandardMaterial, 
-    CubeTexture, Texture, Vector3
-} from "@babylonjs/core";
+import { Scene, MeshBuilder, StandardMaterial, CubeTexture, Texture } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import { SCENE_CONFIG } from "../config";
 import { createGroundMaterial } from "../materials/groundMaterial";
@@ -12,33 +8,6 @@ import useSupabase from "../../hooks/useSupabase";
 // TODO: Maybe have a way to choose to load locally or from supabase
 export const setupObjects = async (scene: Scene): Promise<void> => {
     const { getAssetUrl } = useSupabase();
-    const playerModelUrl = getAssetUrl("models", "human.glb");
-    const playerMeshName = "HumanMale";
-
-    // TODO: As we add more models, we should probably move this to a separate file and make it more universal | hook
-    const loadModelContainer = async (modelUrl: string, meshName: string): Promise<AbstractMesh | undefined> => {
-        // container options
-        const containerOptions: LoadAssetContainerOptions = {
-            pluginExtension: ".glb", // Need explicit extension for glb files
-        }
-        
-        // LoadAssetContainer returns a container with all the meshes, skeletons, and animation groups
-        const modelContainer = await LoadAssetContainerAsync(
-            modelUrl,
-            scene,
-            containerOptions
-        )
-
-        // Find the mesh in the container
-        const mesh = modelContainer.meshes.find(mesh => mesh.name === meshName);
-        if (!mesh) {
-            console.error("Mesh not found: ", meshName);
-            return;
-        }
-
-        return mesh;
-    }
-
 
     try {
         // Scene objects
@@ -90,14 +59,6 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
         ground.material = createGroundMaterial(scene);
         
         console.log("Objects loaded");
-        // Load player model
-        const playerMesh = await loadModelContainer(playerModelUrl, playerMeshName);
-        if (playerMesh) {
-            scene.addMesh(playerMesh);
-            playerMesh.position = new Vector3(0, 0, 0);
-            playerMesh.rotation = new Vector3(0, Math.PI, 0);
-            playerMesh.checkCollisions = true;
-        }
     } catch (error) {
         console.error("Error setting up objects:", error);
         throw error;

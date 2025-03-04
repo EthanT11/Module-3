@@ -6,6 +6,12 @@ export const BACKEND_URL = import.meta.env.PROD
     ? `wss://${import.meta.env.VITE_BACKEND_URL}` // Production URL
     : "ws://localhost:2567"; // Local URL
 
+// TODO: Change Sphere to Player Model
+// NOTE: Remember to keep track of the Y rotation of the player mesh for left and right rotation
+
+// TODO: Keep track of players in a map of id, + mesh | Then update the position of the mesh when the player moves
+// NOTE: Create a context for the Players client side and store similar to the RoomState Schema | Going to be keeping track of a lot of information so better to start this soon.
+
 export const setupMultiplayer = (
     scene: Scene,
     camera: UniversalCamera,

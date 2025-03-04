@@ -1,7 +1,7 @@
-import { Scene, UniversalCamera, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Scene, UniversalCamera, Vector3 } from "@babylonjs/core";
 import { SCENE_CONFIG } from "../config";
 
-const handlePlayerMovement = (camera: UniversalCamera, scene: Scene) => {
+export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, playerModel: AbstractMesh) => {
     // Handle movement
     camera.keysUp = [87]; // W
     camera.keysDown = [83]; // S
@@ -46,10 +46,7 @@ const handlePlayerMovement = (camera: UniversalCamera, scene: Scene) => {
         //  then we apply the gravity to the vertical velocity
         verticalVelocity += scene.gravity.y * (scene.getEngine().getDeltaTime() / 1000);
         
-        // console.log("Vertical Velocity: ", verticalVelocity)
-        // console.log("Gravity: ", scene.gravity.y)
-        // console.log(scene.getEngine().getFps())
-        camera.position.y += verticalVelocity;
+        camera.position.y += verticalVelocity; // TODO: this might be why the camera floats in the air when looking down
 
         // if camera is below the ground threshhold | Will defenitely have to change this but it works for now.
         if (camera.position.y <= 2.1) { 
@@ -60,33 +57,15 @@ const handlePlayerMovement = (camera: UniversalCamera, scene: Scene) => {
                 verticalVelocity = 0;
             }
         }
+
+        // Check if camera has a parent and if so, move the player model to the camera's position
+        if (camera.parent) {
+            playerModel.position = camera.position.clone(); 
+
+            playerModel.rotation.y = camera.rotation.y + Math.PI; // Look left to right
+            playerModel.rotation.z = camera.rotation.z;
+        } else {
+            console.error("Camera does not have a parent: handlePlayerMovement.ts");
+        }
     });
-}
-
-export const setupCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalCamera => {
-    try {
-        const camera = new UniversalCamera(
-            "camera", 
-            new Vector3(0, 10, 0),
-            scene
-        );
-        camera.attachControl(canvas, true);
-    
-        // camera.applyGravity = true; // Gravity is applied in the handlePlayerMovement function |
-        camera.checkCollisions = true;
-        camera.ellipsoid = new Vector3(1, 2, 1); // Collision box of the camera
-        camera.ellipsoidOffset = new Vector3(0, 2, 0); // offset to match player's height
-        
-        camera.minZ = 0.1; // Helps with camera clipping
-        camera.speed = SCENE_CONFIG.CAMERA_CONFIG.speed;
-
-        handlePlayerMovement(camera, scene);
-
-        console.log("Camera setup complete");
-        return camera;
-    } catch (error) {
-        console.error("Error setting up camera:", error);
-        throw error;
-        
-    }
 }
