@@ -12,11 +12,12 @@ export class MyRoom extends Room<MyRoomState> {
     this.onMessage("updatePosition", (client, message): void => {
       const player = this.state.players.get(client.sessionId); // Get the player from the players map
       if (!player) return;
-      
+      // console.log("Updating player position: ", player.x, player.y, player.z, player.rotationY, message);
       player.x = message.x;
       player.y = message.y;
       player.z = message.z;
-      
+      player.rotationY = message.rotationY;
+      // console.log("Updated player position: ", player.x, player.y, player.z, player.rotationY);
     });
 
     // Catch playground message types |

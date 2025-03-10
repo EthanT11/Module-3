@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Client, Room } from "colyseus.js";
+import { Client, Room, RoomAvailable } from "colyseus.js";
 import { BACKEND_URL } from "../../networking/setupMultiplayer";
-import CreateEnvironment from "../../game/CreateGameEnvironment";
+import CreateGameEnvironment from "../../game/CreateGameEnvironment";
 
 
 // ROOM SCREEN
@@ -13,7 +13,7 @@ import CreateEnvironment from "../../game/CreateGameEnvironment";
 // TODO: Style
 
 const RoomScreen = () => {
-    const [rooms, setRooms] = useState<any[]>([]); // TODO: fix type 
+    const [rooms, setRooms] = useState<RoomAvailable[]>([]); // TODO: fix type 
     const [gameStarted, setGameStarted] = useState(false);
     const [currentRoom, setCurrentRoom] = useState<Room>();
   
@@ -31,7 +31,7 @@ const RoomScreen = () => {
             // It helps with testing and development to not have to manually create a room
             if (availableRooms.length === 0) { // If no rooms are open, create a new room 
               const newRoom = await colyseusClient.create(colyseusRoomSchema);
-              console.log("Created new room:", newRoom);
+              console.log("Created new room. Room ID: ", newRoom.roomId);
               setCurrentRoom(newRoom);
               setGameStarted(true);
             }
@@ -53,7 +53,8 @@ const RoomScreen = () => {
         clearInterval(interval)
       };
     }, [gameStarted, currentRoom]);
-  
+    
+
     // Join a room
     const handleJoinRoom = async (roomId: string) => {
       if (currentRoom) { 
@@ -62,7 +63,7 @@ const RoomScreen = () => {
   
       try {
         const room = await colyseusClient.joinById(roomId);
-        console.log("Joined room:", room);
+        console.log("Joined room. Room ID: ", room.roomId);
   
         setCurrentRoom(room);
         setGameStarted(true);
@@ -70,9 +71,10 @@ const RoomScreen = () => {
         console.error("Error joining room:", error);
       }
     };
-  
-    if (gameStarted && currentRoom) { // Entry point for the game 
-      return <CreateEnvironment room={currentRoom} />;
+    
+    // If the game has started and there is a current room, render the game environment
+    if (gameStarted && currentRoom) {
+      return <CreateGameEnvironment room={currentRoom} />;
     }
   
     return (

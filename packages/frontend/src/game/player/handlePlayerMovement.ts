@@ -57,13 +57,13 @@ export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, play
                 verticalVelocity = 0;
             }
         }
+        // console.log("Camera position: ", camera.position);
 
         // Check if camera has a parent and if so, move the player model to the camera's position
         if (camera.parent) {
             playerModel.position = camera.position.clone(); 
 
             playerModel.rotation.y = camera.rotation.y + Math.PI; // Look left to right
-            playerModel.rotation.z = camera.rotation.z;
         } else {
             console.error("Camera does not have a parent: handlePlayerMovement.ts");
         }

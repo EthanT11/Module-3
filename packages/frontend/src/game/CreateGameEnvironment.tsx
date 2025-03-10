@@ -41,6 +41,8 @@ const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
             setupLight(scene);
             setupObjects(scene);
             
+            // Player setup
+            // TODO: move the camera setup directly into the player setup
             const camera = setupPlayerCamera(scene, canvas);
             setupPlayer(scene, camera);
             setupMultiplayer(scene, camera, room);
