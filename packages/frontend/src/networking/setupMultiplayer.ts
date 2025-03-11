@@ -9,7 +9,7 @@ export const BACKEND_URL = import.meta.env.PROD
 
 
 // Interpolate the player's position | Interpolation is used to smooth the movement
-const updatePlayerPosition = ( mesh: AbstractMesh, targetPosition: Vector3, smoothness: number = 0.15
+const interpolatePlayerPosition = ( mesh: AbstractMesh, targetPosition: Vector3, smoothness: number = 0.15
 ) => {
     mesh.position = Vector3.Lerp(
         mesh.position,
@@ -19,7 +19,7 @@ const updatePlayerPosition = ( mesh: AbstractMesh, targetPosition: Vector3, smoo
 }
 
 // Interpolate the player's rotation | Interpolation is used to smooth the movement
-const updatePlayerRotation = ( mesh: AbstractMesh, targetRotation: number, smoothness: number = 0.15) => {
+const interpolatePlayerRotation = ( mesh: AbstractMesh, targetRotation: number, smoothness: number = 0.15) => {
     const currentRotation = mesh.rotation.y;
     // Handle rotation wrapping around 360 degrees
     let difference = targetRotation - currentRotation; // Calculate the difference between the target and current rotation
@@ -29,14 +29,51 @@ const updatePlayerRotation = ( mesh: AbstractMesh, targetRotation: number, smoot
     mesh.rotation.y = currentRotation + difference * smoothness;
 }
 
+interface InitializePlayerProps {
+    scene: Scene;
+    sessionId: string;
+    player: Player;
+    playerMeshes: Map<string, AbstractMesh>;
+    isLocalPlayer: boolean;
+    camera: UniversalCamera;
+}
+
+const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera }: InitializePlayerProps): Promise<AbstractMesh | undefined> => {
+    try {
+        const { mesh } = await createPlayerTransformNode(scene); // Create the player mesh
+        console.log(`Player created: ${sessionId}`, mesh);
+
+        if (mesh) {
+            mesh.position.set(player.x, player.y, player.z); // Set the player's position
+            mesh.rotation.y = player.rotationY; // Set the player's rotation
+            playerMeshes.set(sessionId, mesh); // Store the player's mesh in the map
+
+            // If the player is the local player, set the camera position and target and hide the mesh
+            if (isLocalPlayer) {
+                mesh.isVisible = false;
+                camera.position = mesh.position.clone();
+                camera.position.y += 2; // Camera height offset
+                camera.position.z -= 5; // Camera distance behind player
+                camera.setTarget(mesh.position);
+
+                return mesh;
+            }
+        }
+    } catch (error) {
+        console.error("Error creating player: ", error);
+    }
+
+    return undefined;
+}
+
 
 export const setupMultiplayer = (
     scene: Scene,
     camera: UniversalCamera,
     existingRoom?: Room
 ) => {
-    const playerMeshes = new Map<string, AbstractMesh>(); // Map of player ID to mesh
     let playerModel: AbstractMesh | undefined = undefined;
+    const playerMeshes = new Map<string, AbstractMesh>(); // Map of player ID to mesh
     
     if (!existingRoom) {
         return;
@@ -50,38 +87,16 @@ export const setupMultiplayer = (
     roomState.players.onAdd(async (player, sessionId) => {
         const playerID = sessionId;
         console.log("Player joined: ", player, playerID);
+
+
+        // Initialize the player
+        const isLocalPlayer = sessionId === room.sessionId;
+        const playerMesh = await initializePlayer({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera });
         
-        try {
-            // todo: remove transformNode since it doesn't need it
-            const { transformNode, mesh } = await createPlayerTransformNode(scene);
-            console.log(`Player created: ${playerID}`, transformNode, mesh);
-
-            // Spawn mesh at the player's position and rotation from the server
-            if (transformNode && mesh) {
-                mesh.position.set(player.x, player.y, player.z); 
-                mesh.rotation.y = player.rotationY;
-                
-                // Store ID and mesh in map
-                playerMeshes.set(playerID, mesh);
-            }
-
-            // Check if the player is the local player
-            if (sessionId === room.sessionId) {
-                if (mesh) {
-                    playerModel = mesh;
-                    playerModel.isVisible = false;
-                    // Set initial camera position behind the player
-                    camera.position = mesh.position.clone();
-                    camera.position.y += 2; // Camera height offset
-                    camera.position.z -= 5; // Camera distance behind player
-                    camera.setTarget(mesh.position);
-                }
-            }
-
-        } catch (error) {
-            console.error("Error creating player: ", error); 
+        // If the player is the local player, set the player model
+        if (isLocalPlayer && playerMesh) {
+            playerModel = playerMesh;
         }
-
     
         // Update the player's position when it changes 
         player.onChange(() => {
@@ -90,10 +105,10 @@ export const setupMultiplayer = (
            
             if (playerMesh && sessionId !== room.sessionId) {
                 const targetPosition = new Vector3(player.x, player.y, player.z);
-                updatePlayerPosition(playerMesh, targetPosition);
+                interpolatePlayerPosition(playerMesh, targetPosition);
 
                 const targetRotation = player.rotationY;
-                updatePlayerRotation(playerMesh, targetRotation);
+                interpolatePlayerRotation(playerMesh, targetRotation);
             }
         });
     })
@@ -105,9 +120,9 @@ export const setupMultiplayer = (
             const targetPosition = camera.position.clone();
             targetPosition.y -= 0.5; // Adjust for camera height offset
 
-            updatePlayerPosition(playerModel, targetPosition);
+            interpolatePlayerPosition(playerModel, targetPosition);
 
-            // Update player model rotation to match camera | We don't
+            // Update player model rotation to match camera | We don't interpolate local player rotation
             playerModel.rotation.y = camera.rotation.y + Math.PI;
 
             // Send the player's position and rotation to the server
