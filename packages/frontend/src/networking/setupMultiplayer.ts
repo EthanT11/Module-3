@@ -1,11 +1,33 @@
 import { Scene, UniversalCamera, TransformNode, AbstractMesh, Vector3, Scalar } from "@babylonjs/core";
 import { Room } from "colyseus.js";
-import { MyRoomState } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
+import { MyRoomState, Player } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
 import { createPlayerTransformNode } from "../game/player/createPlayerTransformNode";
 
 export const BACKEND_URL = import.meta.env.PROD 
     ? `wss://${import.meta.env.VITE_BACKEND_URL}` // Production URL
     : "ws://localhost:2567"; // Local URL
+
+
+// Interpolate the player's position | Interpolation is used to smooth the movement
+const updatePlayerPosition = ( mesh: AbstractMesh, targetPosition: Vector3, smoothness: number = 0.15
+) => {
+    mesh.position = Vector3.Lerp(
+        mesh.position,
+        targetPosition,
+        smoothness
+    );
+}
+
+// Interpolate the player's rotation | Interpolation is used to smooth the movement
+const updatePlayerRotation = ( mesh: AbstractMesh, targetRotation: number, smoothness: number = 0.15) => {
+    const currentRotation = mesh.rotation.y;
+    // Handle rotation wrapping around 360 degrees
+    let difference = targetRotation - currentRotation; // Calculate the difference between the target and current rotation
+    if (difference > Math.PI) difference -= Math.PI * 2; // If the difference is greater than 180 degrees, wrap around to the other side
+    if (difference < -Math.PI) difference += Math.PI * 2; // If the difference is less than -180 degrees, wrap around to the other side
+    
+    mesh.rotation.y = currentRotation + difference * smoothness;
+}
 
 
 export const setupMultiplayer = (
@@ -65,28 +87,13 @@ export const setupMultiplayer = (
         player.onChange(() => {
             // Only update the mesh if it's not the local player
             const playerMesh = playerMeshes.get(playerID);
+           
             if (playerMesh && sessionId !== room.sessionId) {
-                // Interpolate the player's position | Interpolation is used to smooth the movement
                 const targetPosition = new Vector3(player.x, player.y, player.z);
-                const smoothness = 0.15; // Increased for smoother movement
-                
-                // Update the player mesh position | Lerp is used to interpolate the position
-                playerMesh.position = Vector3.Lerp(
-                    playerMesh.position,
-                    targetPosition,
-                    smoothness
-                );
+                updatePlayerPosition(playerMesh, targetPosition);
 
-                // Interpolate the player's rotation
-                const currentRotation = playerMesh.rotation.y;
                 const targetRotation = player.rotationY;
-                
-                // Handle rotation wrapping around 360 degrees
-                let difference = targetRotation - currentRotation; // Calculate the difference between the target and current rotation
-                if (difference > Math.PI) difference -= Math.PI * 2; // If the difference is greater than 180 degrees, wrap around to the other side
-                if (difference < -Math.PI) difference += Math.PI * 2; // If the difference is less than -180 degrees, wrap around to the other side
-                
-                playerMesh.rotation.y = currentRotation + difference * smoothness;
+                updatePlayerRotation(playerMesh, targetRotation);
             }
         });
     })
@@ -98,15 +105,9 @@ export const setupMultiplayer = (
             const targetPosition = camera.position.clone();
             targetPosition.y -= 0.5; // Adjust for camera height offset
 
-            // Move the player model towards the target position
-            const smoothness = 0.7; // Adjust this value to control player movement smoothness | Lower is smoother but more laggy
-            playerModel.position = Vector3.Lerp(
-                playerModel.position,
-                targetPosition,
-                smoothness
-            );
+            updatePlayerPosition(playerModel, targetPosition);
 
-            // Update player model rotation to match camera
+            // Update player model rotation to match camera | We don't
             playerModel.rotation.y = camera.rotation.y + Math.PI;
 
             // Send the player's position and rotation to the server
@@ -119,7 +120,7 @@ export const setupMultiplayer = (
         }
     })
     
-    // Dispose of the sphere when the player leaves
+    // Dispose of the model when the player leaves
     roomState.players.onRemove((player, sessionId) => {
         const playerMesh = playerMeshes.get(sessionId);
         if (playerMesh) {
