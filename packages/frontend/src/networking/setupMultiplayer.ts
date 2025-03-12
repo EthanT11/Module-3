@@ -46,9 +46,9 @@ const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLoca
         if (mesh) {
             mesh.position.set(player.x, player.y, player.z); // Set the player's position
             mesh.rotation.y = player.rotationY; // Set the player's rotation
-            playerMeshes.set(sessionId, mesh); // Store the player's mesh in the map
+            playerMeshes.set(sessionId, mesh); // Store the id and player's mesh in the map
 
-            // If the player is the local player, set the camera position and target and hide the mesh
+            // If the player is the local player, set the camera position and target, and hide the mesh
             if (isLocalPlayer) {
                 mesh.isVisible = false;
                 camera.position = mesh.position.clone();
@@ -66,31 +66,56 @@ const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLoca
     return undefined;
 }
 
+// Update the player's position and rotation and send it to the server
+const updatePlayerPosition = (
+    playerModel: AbstractMesh,
+    camera: UniversalCamera,
+    room: Room
+) => {
+    // Calculate the target position (where the player should be)
+    const targetPosition = camera.position.clone();
+    targetPosition.y -= 0.5; // Adjust for camera height offset
+
+    interpolatePlayerPosition(playerModel, targetPosition);
+
+    // Update player model rotation to match camera | We don't interpolate local player rotation
+    playerModel.rotation.y = camera.rotation.y + Math.PI;
+
+    // Send the player's position and rotation to the server
+    room.send("updatePosition", {
+        x: playerModel.position.x,
+        y: playerModel.position.y,
+        z: playerModel.position.z,
+        rotationY: playerModel.rotation.y
+    });
+}
 
 export const setupMultiplayer = (
     scene: Scene,
     camera: UniversalCamera,
     existingRoom?: Room
 ) => {
-    let playerModel: AbstractMesh | undefined = undefined;
+    let playerModel: AbstractMesh | undefined;
     const playerMeshes = new Map<string, AbstractMesh>(); // Map of player ID to mesh
+    let room: Room;
+    let roomState: MyRoomState;
     
     if (!existingRoom) {
         return;
     }
     
-    const room = existingRoom; // If a room connection is provided, use it
-    const roomState = room.state as MyRoomState;
+    room = existingRoom; // If a room connection is provided, use it
+    roomState = room.state;
     console.log("Setting up multiplayer with room: ", room)
     
-    // When a player joins the room
     roomState.players.onAdd(async (player, sessionId) => {
         const playerID = sessionId;
         console.log("Player joined: ", player, playerID);
 
+        // Check if the player is the local player
+        const isLocalPlayer = sessionId === room.sessionId;
 
         // Initialize the player
-        const isLocalPlayer = sessionId === room.sessionId;
         const playerMesh = await initializePlayer({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera });
         
         // If the player is the local player, set the player model
@@ -98,17 +123,15 @@ export const setupMultiplayer = (
             playerModel = playerMesh;
         }
     
-        // Update the player's position when it changes 
         player.onChange(() => {
-            // Only update the mesh if it's not the local player
-            const playerMesh = playerMeshes.get(playerID);
-           
-            if (playerMesh && sessionId !== room.sessionId) {
+            // Update the player's position when it changes if it's not the local player
+            const currentPlayerMesh = playerMeshes.get(playerID);
+            if (currentPlayerMesh && !isLocalPlayer) {
                 const targetPosition = new Vector3(player.x, player.y, player.z);
-                interpolatePlayerPosition(playerMesh, targetPosition);
+                interpolatePlayerPosition(currentPlayerMesh, targetPosition);
 
                 const targetRotation = player.rotationY;
-                interpolatePlayerRotation(playerMesh, targetRotation);
+                interpolatePlayerRotation(currentPlayerMesh, targetRotation);
             }
         });
     })
@@ -116,27 +139,13 @@ export const setupMultiplayer = (
     // Update the player model's position and rotation every frame
     scene.registerBeforeRender(() => {
         if (playerModel) {
-            // Calculate the target position (where the player should be)
-            const targetPosition = camera.position.clone();
-            targetPosition.y -= 0.5; // Adjust for camera height offset
-
-            interpolatePlayerPosition(playerModel, targetPosition);
-
-            // Update player model rotation to match camera | We don't interpolate local player rotation
-            playerModel.rotation.y = camera.rotation.y + Math.PI;
-
-            // Send the player's position and rotation to the server
-            room.send("updatePosition", {
-                x: playerModel.position.x,
-                y: playerModel.position.y,
-                z: playerModel.position.z,
-                rotationY: playerModel.rotation.y
-            });
+            updatePlayerPosition(playerModel, camera, room);
         }
     })
     
     // Dispose of the model when the player leaves
     roomState.players.onRemove((player, sessionId) => {
+        console.log("Player left: ", player, sessionId);
         const playerMesh = playerMeshes.get(sessionId);
         if (playerMesh) {
             playerMesh.dispose();
