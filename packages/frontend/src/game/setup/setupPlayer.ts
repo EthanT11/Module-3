@@ -17,9 +17,6 @@ export const setupPlayer = async (scene: Scene, camera: UniversalCamera): Promis
         // We want the camera to be a child of the player transform
         camera.parent = player.transformNode; 
         handlePlayerMovement(camera, scene, player.mesh);
-
-        // TODO: Add Player Animation
-        // TODO: Add collision to transform node
         
     } catch (error) {
         console.error("Error setting up player:", error);

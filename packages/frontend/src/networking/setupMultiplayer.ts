@@ -1,33 +1,14 @@
-import { Scene, UniversalCamera, TransformNode, AbstractMesh, Vector3, Scalar } from "@babylonjs/core";
+import { Scene, UniversalCamera, AbstractMesh, Vector3} from "@babylonjs/core";
 import { Room } from "colyseus.js";
 import { MyRoomState, Player } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
 import { createPlayerTransformNode } from "../game/player/createPlayerTransformNode";
+import { interpolatePlayerPosition } from "../game/player/interpolatePlayer";
+import { SCENE_CONFIG } from "../game/config";
 
 export const BACKEND_URL = import.meta.env.PROD 
     ? `wss://${import.meta.env.VITE_BACKEND_URL}` // Production URL
     : "ws://localhost:2567"; // Local URL
 
-
-// Interpolate the player's position | Interpolation is used to smooth the movement
-const interpolatePlayerPosition = ( mesh: AbstractMesh, targetPosition: Vector3, smoothness: number = 0.15
-) => {
-    mesh.position = Vector3.Lerp(
-        mesh.position,
-        targetPosition,
-        smoothness
-    );
-}
-
-// Interpolate the player's rotation | Interpolation is used to smooth the movement
-const interpolatePlayerRotation = ( mesh: AbstractMesh, targetRotation: number, smoothness: number = 0.15) => {
-    const currentRotation = mesh.rotation.y;
-    // Handle rotation wrapping around 360 degrees
-    let difference = targetRotation - currentRotation; // Calculate the difference between the target and current rotation
-    if (difference > Math.PI) difference -= Math.PI * 2; // If the difference is greater than 180 degrees, wrap around to the other side
-    if (difference < -Math.PI) difference += Math.PI * 2; // If the difference is less than -180 degrees, wrap around to the other side
-    
-    mesh.rotation.y = currentRotation + difference * smoothness;
-}
 
 interface InitializePlayerProps {
     scene: Scene;
@@ -40,24 +21,33 @@ interface InitializePlayerProps {
 
 const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera }: InitializePlayerProps): Promise<AbstractMesh | undefined> => {
     try {
-        const { mesh } = await createPlayerTransformNode(scene); // Create the player mesh
+        const { mesh } = await createPlayerTransformNode(scene);
         console.log(`Player created: ${sessionId}`, mesh);
 
         if (mesh) {
-            mesh.position.set(player.x, player.y, player.z); // Set the player's position
-            mesh.rotation.y = player.rotationY; // Set the player's rotation
-            playerMeshes.set(sessionId, mesh); // Store the id and player's mesh in the map
-
-            // If the player is the local player, set the camera position and target, and hide the mesh
+            mesh.position.set(player.x, 0, player.z); // Force Y position to 0 for ground level
+            mesh.rotationQuaternion = null;
+            
             if (isLocalPlayer) {
+                // Hide the mesh
                 mesh.isVisible = false;
+                mesh.scaling = new Vector3(0.001, 0.001, 0.001); // This is a hack to make the mesh not visible. for some reason isVisible is not working will come back to this.
+                
+                // Set the camera to the player's position
                 camera.position = mesh.position.clone();
-                camera.position.y += 2; // Camera height offset
-                camera.position.z -= 5; // Camera distance behind player
+                camera.position.y += 1;
+                camera.position.z -= 5;
                 camera.setTarget(mesh.position);
-
-                return mesh;
+            } else {
+                // For remote players
+                mesh.isVisible = true;
+                // mesh.scaling = SCENE_CONFIG.MODEL_CONFIG.scaling;
+                // Rotate 180 degrees around X axis to flip model right-side up
+                mesh.rotate(new Vector3(1, 0, 0), Math.PI);
             }
+            
+            playerMeshes.set(sessionId, mesh);
+            return mesh;
         }
     } catch (error) {
         console.error("Error creating player: ", error);
@@ -72,21 +62,19 @@ const updatePlayerPosition = (
     camera: UniversalCamera,
     room: Room
 ) => {
-    // Calculate the target position (where the player should be)
     const targetPosition = camera.position.clone();
-    targetPosition.y -= 0.5; // Adjust for camera height offset
+    targetPosition.y -= SCENE_CONFIG.GROUND_CONFIG.yOffset;
 
     interpolatePlayerPosition(playerModel, targetPosition);
 
-    // Update player model rotation to match camera | We don't interpolate local player rotation
-    playerModel.rotation.y = camera.rotation.y + Math.PI;
+    // Get camera rotation and add PI to face the correct direction
+    const rotationY = camera.absoluteRotation.toEulerAngles().y + Math.PI;
 
-    // Send the player's position and rotation to the server
     room.send("updatePosition", {
         x: playerModel.position.x,
         y: playerModel.position.y,
         z: playerModel.position.z,
-        rotationY: playerModel.rotation.y
+        rotationY: rotationY
     });
 }
 
@@ -124,14 +112,16 @@ export const setupMultiplayer = (
         }
     
         player.onChange(() => {
-            // Update the player's position when it changes if it's not the local player
             const currentPlayerMesh = playerMeshes.get(playerID);
             if (currentPlayerMesh && !isLocalPlayer) {
                 const targetPosition = new Vector3(player.x, player.y, player.z);
                 interpolatePlayerPosition(currentPlayerMesh, targetPosition);
 
-                const targetRotation = player.rotationY;
-                interpolatePlayerRotation(currentPlayerMesh, targetRotation);
+                // Ensure rotation is not locked
+                currentPlayerMesh.rotationQuaternion = null;
+                
+                // Try rotating the mesh directly
+                currentPlayerMesh.rotation.y = player.rotationY;
             }
         });
     })

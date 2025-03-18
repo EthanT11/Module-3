@@ -18,6 +18,8 @@ export const setupPlayerCamera = (scene: Scene, canvas: HTMLCanvasElement): Univ
         camera.minZ = 0.1; // Helps with camera clipping
         camera.speed = SCENE_CONFIG.CAMERA_CONFIG.speed;
         camera.inertia = SCENE_CONFIG.CAMERA_CONFIG.inertia; // 0 is no inertia, 1 is full inertia
+        
+        camera.rotationQuaternion = camera.absoluteRotation;
 
         console.log("Camera setup complete");
         return camera;
