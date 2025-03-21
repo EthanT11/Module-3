@@ -5,6 +5,7 @@ import useSupabase from "../../hooks/useSupabase";
 export interface PlayerTransformNode {
     mesh: AbstractMesh | undefined;
     transformNode: TransformNode | undefined;
+    // TODO: Find type for animations
     animations: {
         jump?: any;
         run?: any;
@@ -38,18 +39,11 @@ const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | unde
         mesh.rotate(new Vector3(1, 0, 0), Math.PI); // Rotate the mesh 180 degrees around the X axis to flip it right-side up
     });
 
-    // Probably don't need to add these to the scene EVERY time
+    // Probably don't need to add these to the scene EVERY time we load a player
     modelContainer.animationGroups.forEach(group => {
         scene.addAnimationGroup(group);
     });
     console.log("Scene Animation Groups: ", scene.animationGroups);
-
-    // Play idle animation if it exists
-    const idleAnim = modelContainer.animationGroups.find(group => group.name === "run"); // idle, jump, run
-    if (idleAnim) {
-        console.log("Playing idle animation: ", idleAnim);
-        // idleAnim.play(true);
-    }
     
     // Find the root mesh that contains all parts
     playerMesh = modelContainer.meshes.find(mesh => mesh.name === rootMeshName);
@@ -68,7 +62,7 @@ const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | unde
     return { mesh: playerMesh, animations };
 }
 
-// Returns an object with the mesh and transform node { mesh: AbstractMesh, transformNode: TransformNode }
+// Returns an object with the mesh and transform node { mesh: AbstractMesh, transformNode: TransformNode, animations: {}}
 export const createPlayerTransformNode = async (scene: Scene): Promise<PlayerTransformNode> => {
     let mesh: AbstractMesh | undefined = undefined;
     let transformNode: TransformNode | undefined = undefined;

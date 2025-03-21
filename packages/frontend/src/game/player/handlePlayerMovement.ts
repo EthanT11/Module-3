@@ -64,7 +64,7 @@ export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, play
                 // Play jump animation
                 if (player.animations.jump) {
                     player.animations.jump.stop();
-                    player.animations.jump.play(false); // false means don't loop the animation
+                    player.animations.jump.play(false);
                 }
             }
         }
