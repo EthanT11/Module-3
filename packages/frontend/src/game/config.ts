@@ -14,7 +14,7 @@ export const SCENE_CONFIG = {
         ellipsoidOffset: new Vector3(0, 1, 0), // offset to match player's height
 
         // Camera offset from the player model
-        cameraOffset: 1.9,
+        cameraOffset: 1.85,
 
         // movement
         speed: 0.50,
