@@ -1,9 +1,10 @@
-import { Scene, UniversalCamera, AbstractMesh, Vector3} from "@babylonjs/core";
+import { Scene, UniversalCamera, AbstractMesh, Vector3, AnimationGroup } from "@babylonjs/core";
 import { Room } from "colyseus.js";
 import { MyRoomState, Player } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
-import { createPlayerTransformNode } from "../game/player/createPlayerTransformNode";
+import { createPlayerTransformNode, PlayerTransformNode } from "../game/player/createPlayerTransformNode";
 import { interpolatePlayerPosition } from "../game/player/interpolatePlayer";
 import { SCENE_CONFIG } from "../game/config";
+import { PlayerState } from "../game/player/PlayerState";
 
 export const BACKEND_URL = import.meta.env.PROD 
     ? `wss://${import.meta.env.VITE_BACKEND_URL}` // Production URL
@@ -19,9 +20,9 @@ interface InitializePlayerProps {
     camera: UniversalCamera;
 }
 
-const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera }: InitializePlayerProps): Promise<AbstractMesh | undefined> => {
+const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera }: InitializePlayerProps): Promise<PlayerTransformNode | undefined> => {
     try {
-        const { mesh } = await createPlayerTransformNode(scene);
+        const { mesh, transformNode, animations } = await createPlayerTransformNode(scene);
         console.log(`Player created: ${sessionId}`, mesh);
 
         if (mesh) {
@@ -44,10 +45,15 @@ const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLoca
                 // mesh.scaling = SCENE_CONFIG.MODEL_CONFIG.scaling;
                 // Rotate 180 degrees around X axis to flip model right-side up
                 mesh.rotate(new Vector3(1, 0, 0), Math.PI);
+
+                // Start with idle animation for remote players
+                if (animations.idle) {
+                    animations.idle.play(true);
+                }
             }
             
             playerMeshes.set(sessionId, mesh);
-            return mesh;
+            return {mesh, transformNode, animations};
         }
     } catch (error) {
         console.error("Error creating player: ", error);
@@ -104,11 +110,11 @@ export const setupMultiplayer = (
         const isLocalPlayer = sessionId === room.sessionId;
 
         // Initialize the player
-        const playerMesh = await initializePlayer({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera });
+        const playerTransformNode = await initializePlayer({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera });
         
         // If the player is the local player, set the player model
-        if (isLocalPlayer && playerMesh) {
-            playerModel = playerMesh;
+        if (isLocalPlayer && playerTransformNode) {
+            playerModel = playerTransformNode.mesh;
         }
     
         player.onChange(() => {

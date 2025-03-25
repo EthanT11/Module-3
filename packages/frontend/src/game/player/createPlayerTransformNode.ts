@@ -34,7 +34,7 @@ const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | unde
     
     // Add all meshes and animations to the scene
     modelContainer.meshes.forEach(mesh => {
-        console.log("Adding mesh to scene: ", mesh);
+        // console.log("Adding mesh to scene: ", mesh);
         scene.addMesh(mesh);
         mesh.rotate(new Vector3(1, 0, 0), Math.PI); // Rotate the mesh 180 degrees around the X axis to flip it right-side up
     });
@@ -43,7 +43,7 @@ const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | unde
     modelContainer.animationGroups.forEach(group => {
         scene.addAnimationGroup(group);
     });
-    console.log("Scene Animation Groups: ", scene.animationGroups);
+    // console.log("Scene Animation Groups: ", scene.animationGroups);
     
     // Find the root mesh that contains all parts
     playerMesh = modelContainer.meshes.find(mesh => mesh.name === rootMeshName);
@@ -89,7 +89,7 @@ export const createPlayerTransformNode = async (scene: Scene): Promise<PlayerTra
 
         // Add the mesh to the scene
         scene.addMesh(mesh);
-        console.log("Transform node animations: ", transformNode.animations);
+        // console.log("Transform node animations: ", transformNode.animations);
 
         result = { mesh, transformNode, animations };
 
