@@ -1,4 +1,4 @@
-import { Scene, MeshBuilder, StandardMaterial, CubeTexture, Texture } from "@babylonjs/core";
+import { Scene, MeshBuilder, StandardMaterial, CubeTexture, Texture, Color3 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import { SCENE_CONFIG } from "../config";
 import { createGroundMaterial } from "../materials/groundMaterial";
@@ -57,7 +57,36 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
         );
         ground.checkCollisions = true;
         ground.material = createGroundMaterial(scene);
-        
+
+        // Add platforms
+        const createPlatform = (x: number, y: number, z: number) => {
+            const platform = MeshBuilder.CreateBox("platform", { 
+                width: 4,
+                height: 0.5,
+                depth: 4
+            }, scene);
+            platform.position.set(x, y, z);
+            platform.checkCollisions = true;
+
+            // Visualize the collision box
+            platform.showBoundingBox = true;
+            
+            return platform;
+        };
+
+        createPlatform(5, 2, 0);
+        createPlatform(10, 4, 3);
+        createPlatform(15, 6, -2);
+        createPlatform(8, 8, 1);
+        createPlatform(12, 10, -3);
+        createPlatform(16, 12, 2);
+        createPlatform(18, 14, -1);
+        createPlatform(20, 16, 3);
+        createPlatform(22, 18, -2);
+        createPlatform(24, 20, 1);
+        createPlatform(26, 22, -3);
+        createPlatform(28, 24, 2);
+
         console.log("Objects loaded");
     } catch (error) {
         console.error("Error setting up objects:", error);

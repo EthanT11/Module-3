@@ -1,4 +1,4 @@
-import { Scene, UniversalCamera, AbstractMesh, Vector3, AnimationGroup } from "@babylonjs/core";
+import { Scene, UniversalCamera, AbstractMesh, Vector3, AnimationGroup, MeshBuilder, IMeshDataOptions } from "@babylonjs/core";
 import { Room } from "colyseus.js";
 import { MyRoomState, Player } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
 import { createPlayerTransformNode, PlayerTransformNode } from "../game/player/createPlayerTransformNode";
@@ -44,10 +44,30 @@ const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, is
         } else {
             // For remote players
             mesh.isVisible = true;
-            // mesh.scaling = SCENE_CONFIG.MODEL_CONFIG.scaling;
-            // Rotate 180 degrees around X axis to flip model right-side up
             mesh.rotate(new Vector3(1, 0, 0), Math.PI);
 
+            // Enable bounding box visualization for the mesh and all its children
+            mesh.showBoundingBox = true;
+            mesh.getChildMeshes().forEach(childMesh => {
+                childMesh.showBoundingBox = true;
+            });
+
+            // Compute the bounding box info to ensure it's updated
+            mesh.computeWorldMatrix(true);
+            const boundingInfoOptions: IMeshDataOptions = {
+                // applySkeleton: true,
+            }
+            mesh.refreshBoundingInfo(boundingInfoOptions);
+
+            // Create a semi-transparent collision box
+            const collisionBox = MeshBuilder.CreateBox("collisionBox_" + sessionId, {
+                width: 1,
+                height: 2,
+                depth: 1
+            }, scene);
+            collisionBox.parent = mesh;
+            collisionBox.position.y = -1;
+            
             // Start with idle animation for remote players
             if (animations.idle) {
                 animations.idle.play(true);

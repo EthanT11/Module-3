@@ -10,7 +10,7 @@ export const SCENE_CONFIG = {
     CAMERA_CONFIG: {
         // player camera
         startPosition: new Vector3(0, 0, 0),
-        ellipsoid: new Vector3(1, 1, 1), // Collision box of the camera
+        ellipsoid: new Vector3(0.5, 1, 0.5), // Collision box of the camera
         ellipsoidOffset: new Vector3(0, 1, 0), // offset to match player's height
 
         // Camera offset from the player model
