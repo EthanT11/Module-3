@@ -19,6 +19,7 @@ export interface IPlayerState {
 }
 
 // Implements keyword makes sure that the class implements all the properties of the interface
+// A State to keep track of the player individual properties
 export class PlayerState implements IPlayerState {
     position: Vector3;
     rotationY: number;
@@ -41,8 +42,17 @@ export class PlayerState implements IPlayerState {
     updatePosition(position: Vector3) {
         this.position.set(position.x, position.y, position.z);
     }
+
+    updateRotationY(rotationY: number) {
+        this.rotationY = rotationY;
+    }
+
+    setAnimationState(state: PlayerAnimation) {
+        this.currentAnimation = state;
+    }
 }
 
+// A State to keep track of all the players in the room
 export class PlayerStateManager {
     // private makes it so the variables can't be accessed outside the class
     private players: Map<string, PlayerState>;
@@ -52,5 +62,33 @@ export class PlayerStateManager {
         this.players = new Map();
         this.localPlayerId = null;
     }
+
+    // Create a new player state and add it to the map
+    addPlayer(sessionId: string) {
+        const playerState = new PlayerState(sessionId);
+        this.players.set(sessionId, playerState);
+        return playerState;
+    }
+
+    removePlayer(sessionId: string) {
+        this.players.delete(sessionId);
+    }
     
+    // Get a player state from the map
+    getPlayer(sessionId: string): PlayerState | undefined {
+        return this.players.get(sessionId);
+    }
+
+    setLocalPlayer(sessionId: string) {
+        this.localPlayerId = sessionId;
+    }
+
+    getLocalPlayer(): PlayerState | undefined {
+        if (!this.localPlayerId) {
+            return undefined;
+        }
+        return this.players.get(this.localPlayerId);
+    }
+
+
 }

@@ -8,6 +8,8 @@ import { setupScene } from "./setup/setupScene";
 import { setupObjects } from "./setup/setupObjects";
 import { SCENE_CONFIG } from "./config";
 import { setupPlayer } from "./setup/setupPlayer";
+import { PlayerStateManager } from "./player/PlayerState";
+
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
 // https://www.youtube.com/watch?v=npt_oXGTLfg
@@ -44,8 +46,11 @@ const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
             // Player setup
             // TODO: move the camera setup directly into the player setup
             const camera = setupPlayerCamera(scene, canvas);
-            setupPlayer(scene, camera);
-            setupMultiplayer(scene, camera, room);
+
+            // Create the player state manager
+            const playerStateManager = new PlayerStateManager();
+            setupPlayer(scene, camera, playerStateManager);
+            setupMultiplayer(scene, camera, playerStateManager, room);
 
             scene.executeWhenReady(() => {
                 // Hide the loading screen when the scene is ready

@@ -4,7 +4,7 @@ import { MyRoomState, Player } from "../../../backend-colyseus/src/rooms/schema/
 import { createPlayerTransformNode, PlayerTransformNode } from "../game/player/createPlayerTransformNode";
 import { interpolatePlayerPosition } from "../game/player/interpolatePlayer";
 import { SCENE_CONFIG } from "../game/config";
-import { PlayerState } from "../game/player/PlayerState";
+import { PlayerStateManager } from "../game/player/PlayerState";
 
 export const BACKEND_URL = import.meta.env.PROD 
     ? `wss://${import.meta.env.VITE_BACKEND_URL}` // Production URL
@@ -20,7 +20,7 @@ interface InitializePlayerProps {
     camera: UniversalCamera;
 }
 
-const initializePlayer = async ({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera }: InitializePlayerProps): Promise<PlayerTransformNode | undefined> => {
+const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera }: InitializePlayerProps): Promise<PlayerTransformNode | undefined> => {
     try {
         const { mesh, transformNode, animations } = await createPlayerTransformNode(scene);
         console.log(`Player created: ${sessionId}`, mesh);
@@ -87,9 +87,10 @@ const updatePlayerPosition = (
 export const setupMultiplayer = (
     scene: Scene,
     camera: UniversalCamera,
-    existingRoom?: Room
+    playerStateManager: PlayerStateManager,
+    existingRoom?: Room,
 ) => {
-    let playerModel: AbstractMesh | undefined;
+    let playerMesh: AbstractMesh | undefined;
     const playerMeshes = new Map<string, AbstractMesh>(); // Map of player ID to mesh
     let room: Room;
     let roomState: MyRoomState;
@@ -103,39 +104,52 @@ export const setupMultiplayer = (
     console.log("Setting up multiplayer with room: ", room)
     
     roomState.players.onAdd(async (player, sessionId) => {
-        const playerID = sessionId;
-        console.log("Player joined: ", player, playerID);
-
         // Check if the player is the local player
         const isLocalPlayer = sessionId === room.sessionId;
-
-        // Initialize the player
-        const playerTransformNode = await initializePlayer({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera });
         
-        // If the player is the local player, set the player model
+        // Add new player to player state manager
+        playerStateManager.addPlayer(sessionId);
+        if (isLocalPlayer) {
+            playerStateManager.setLocalPlayer(sessionId);
+        }
+
+        const playerTransformNode = await initializePlayerMesh({ 
+            scene, 
+            sessionId, 
+            player, 
+            playerMeshes, 
+            isLocalPlayer, 
+            camera 
+        });
+        
         if (isLocalPlayer && playerTransformNode) {
-            playerModel = playerTransformNode.mesh;
+            playerMesh = playerTransformNode.mesh;
         }
     
         player.onChange(() => {
-            const currentPlayerMesh = playerMeshes.get(playerID);
-            if (currentPlayerMesh && !isLocalPlayer) {
+            // Fetch the changing player's mesh and player state
+            const currentPlayerMesh = playerMeshes.get(sessionId);
+            const playerState = playerStateManager.getPlayer(sessionId);
+            
+            // If the player is not the local player and the player state exists, update the player's position and rotation
+            if (currentPlayerMesh && !isLocalPlayer && playerState) {
                 const targetPosition = new Vector3(player.x, player.y, player.z);
+                playerState.updatePosition(targetPosition);
+                playerState.updateRotationY(player.rotationY);
+                
                 interpolatePlayerPosition(currentPlayerMesh, targetPosition);
-
-                // Ensure rotation is not locked
                 currentPlayerMesh.rotationQuaternion = null;
                 
                 // Try rotating the mesh directly
                 currentPlayerMesh.rotation.y = player.rotationY;
             }
         });
-    })
+    });
 
     // Update the player model's position and rotation every frame
     scene.registerBeforeRender(() => {
-        if (playerModel) {
-            updatePlayerPosition(playerModel, camera, room);
+        if (playerMesh) {
+            updatePlayerPosition(playerMesh, camera, room);
         }
     })
     
@@ -146,6 +160,7 @@ export const setupMultiplayer = (
         if (playerMesh) {
             playerMesh.dispose();
             playerMeshes.delete(sessionId);
+            playerStateManager.removePlayer(sessionId);
         }
     })
 

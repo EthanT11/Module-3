@@ -1,33 +1,48 @@
 import { Scene, UniversalCamera } from "@babylonjs/core";
 import { SCENE_CONFIG } from "../config";
 import { PlayerTransformNode } from './createPlayerTransformNode';
+import { PlayerStateManager, PlayerAnimation } from "./PlayerState";
 
-export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, player: PlayerTransformNode) => {
+export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, player: PlayerTransformNode, playerStateManager: PlayerStateManager) => {
     // Handle movement
     camera.keysUp = [87]; // W
     camera.keysDown = [83]; // S
     camera.keysLeft = [65]; // A
     camera.keysRight = [68]; // D
+    const moveKeys = ["KeyW", "KeyS", "KeyA", "KeyD"];
 
+    const localPlayer = playerStateManager.getLocalPlayer();
     let isMoving = false;
 
     scene.onKeyboardObservable.add((kb) => {
         if (kb.type === 1) { // key down
-            if (kb.event.code === "KeyW" && !isMoving) {
+            // Check if the key is a movement key and if the player is not already moving
+            if (moveKeys.includes(kb.event.code) && !isMoving) {
                 isMoving = true;
-                if (player.animations.run) {
-                    player.animations.run.stop();
-                    player.animations.run.play(true);
+                // Update the local player's state
+                if (localPlayer) {
+                    localPlayer.isMoving = true;
+                    localPlayer.setAnimationState(PlayerAnimation.RUNNING);
+                    // Player the animation if it exists
+                    if (player.animations.run) {
+                        player.animations.run.stop();
+                        player.animations.run.play(true);
+                    }
                 }
             }
         } else if (kb.type === 2) { // key up
-            if (kb.event.code === "KeyW") {
+            if (moveKeys.includes(kb.event.code)) {
                 isMoving = false;
-                if (player.animations.run) {
-                    player.animations.run.stop();
-                }
-                if (player.animations.idle) {
-                    player.animations.idle.play(true);
+                // Update the local player's state
+                if (localPlayer) {
+                    localPlayer.isMoving = false;
+                    localPlayer.setAnimationState(PlayerAnimation.IDLE);
+                    if (player.animations.run) {
+                        player.animations.run.stop();
+                    }
+                    if (player.animations.idle) {
+                        player.animations.idle.play(true);
+                    }
                 }
             }
         }
@@ -58,14 +73,20 @@ export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, play
         if (kb.type === 1) { // check if key_down event
             if (kb.event.code === "Space" && jumpCount < SCENE_CONFIG.CAMERA_CONFIG.maxJumps) {
                 isJumping = true;
+                if (localPlayer) {
+                    localPlayer.isJumping = true;
+                    localPlayer.setAnimationState(PlayerAnimation.JUMPING);
+                    // Play jump animation
+                    // TODO: Make jump animation faster
+                    if (player.animations.jump) {
+                        player.animations.jump.stop();
+                        player.animations.jump.play(false);
+                    }
+                }
+                // Apply jump power to the camera
                 verticalVelocity = SCENE_CONFIG.CAMERA_CONFIG.jumpPower;
                 jumpCount++;
                 
-                // Play jump animation
-                if (player.animations.jump) {
-                    player.animations.jump.stop();
-                    player.animations.jump.play(false);
-                }
             }
         }
     });
@@ -88,9 +109,13 @@ export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, play
                 isJumping = false;
                 jumpCount = 0;
                 verticalVelocity = 0;
-                
-                if (player.animations.idle) {
-                    player.animations.idle.play(true);
+                // Play idle animation
+                if (localPlayer) {
+                    localPlayer.isJumping = false;
+                    localPlayer.setAnimationState(PlayerAnimation.IDLE);
+                    if (player.animations.idle) {
+                        player.animations.idle.play(true);
+                    }
                 }
             }
         }
