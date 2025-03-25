@@ -3,6 +3,7 @@ import { SCENE_CONFIG } from "../config";
 import { PlayerTransformNode } from './createPlayerTransformNode';
 import { PlayerStateManager, PlayerAnimation } from "./PlayerState";
 
+
 export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, player: PlayerTransformNode, playerStateManager: PlayerStateManager) => {
     // Handle movement
     camera.keysUp = [87]; // W

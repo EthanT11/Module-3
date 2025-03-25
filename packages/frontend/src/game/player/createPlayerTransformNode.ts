@@ -50,8 +50,7 @@ const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | unde
     if (!playerMesh) {
         console.error("Error loading player mesh: ", modelUrl);
         return { mesh: undefined, animations: {} };
-    }
-    console.log("Player mesh loaded: ", playerMesh.position); 
+    } 
     
     const animations = {
         jump: modelContainer.animationGroups.find(group => group.name === "jump"),

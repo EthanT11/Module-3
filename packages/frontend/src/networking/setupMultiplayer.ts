@@ -25,41 +25,41 @@ const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, is
         const { mesh, transformNode, animations } = await createPlayerTransformNode(scene);
         console.log(`Player created: ${sessionId}`, mesh);
 
-        if (mesh) {
-            mesh.position.set(player.x, 0, player.z); // Force Y position to 0 for ground level
-            mesh.rotationQuaternion = null;
-            
-            if (isLocalPlayer) {
-                // Hide the mesh
-                mesh.isVisible = false;
-                mesh.scaling = new Vector3(0.001, 0.001, 0.001); // This is a hack to make the mesh not visible. for some reason isVisible is not working will come back to this.
-                
-                // Set the camera to the player's position
-                camera.position = mesh.position.clone();
-                camera.position.y += 1;
-                camera.position.z -= 5;
-                camera.setTarget(mesh.position);
-            } else {
-                // For remote players
-                mesh.isVisible = true;
-                // mesh.scaling = SCENE_CONFIG.MODEL_CONFIG.scaling;
-                // Rotate 180 degrees around X axis to flip model right-side up
-                mesh.rotate(new Vector3(1, 0, 0), Math.PI);
+        if (!mesh) return undefined;
 
-                // Start with idle animation for remote players
-                if (animations.idle) {
-                    animations.idle.play(true);
-                }
-            }
+        // Set initial position and rotation
+        mesh.position.set(player.x, 0, player.z); // Force Y position to 0 for ground level
+        mesh.rotationQuaternion = null;
+
+        if (isLocalPlayer) {
+            // Hide the mesh
+            mesh.isVisible = false;
+            mesh.scaling = new Vector3(0.001, 0.001, 0.001); // This is a hack to make the mesh not visible. for some reason isVisible is not working will come back to this.
             
-            playerMeshes.set(sessionId, mesh);
-            return {mesh, transformNode, animations};
+            // Set the camera to the player's position
+            camera.position = mesh.position.clone();
+            camera.position.y += 1;
+            camera.position.z -= 5;
+            camera.setTarget(mesh.position);
+        } else {
+            // For remote players
+            mesh.isVisible = true;
+            // mesh.scaling = SCENE_CONFIG.MODEL_CONFIG.scaling;
+            // Rotate 180 degrees around X axis to flip model right-side up
+            mesh.rotate(new Vector3(1, 0, 0), Math.PI);
+
+            // Start with idle animation for remote players
+            if (animations.idle) {
+                animations.idle.play(true);
+            }
         }
+    
+        playerMeshes.set(sessionId, mesh);
+        return {mesh, transformNode, animations};
     } catch (error) {
         console.error("Error creating player: ", error);
+        return undefined;
     }
-
-    return undefined;
 }
 
 // Update the player's position and rotation and send it to the server
@@ -90,15 +90,13 @@ export const setupMultiplayer = (
     playerStateManager: PlayerStateManager,
     existingRoom?: Room,
 ) => {
-    let playerMesh: AbstractMesh | undefined;
+    if (!existingRoom) return;
+
     const playerMeshes = new Map<string, AbstractMesh>(); // Map of player ID to mesh
+    let localPlayerMesh: AbstractMesh | undefined;
+
     let room: Room;
     let roomState: MyRoomState;
-    
-    if (!existingRoom) {
-        return;
-    }
-    
     room = existingRoom; // If a room connection is provided, use it
     roomState = room.state;
     console.log("Setting up multiplayer with room: ", room)
@@ -123,7 +121,7 @@ export const setupMultiplayer = (
         });
         
         if (isLocalPlayer && playerTransformNode) {
-            playerMesh = playerTransformNode.mesh;
+            localPlayerMesh = playerTransformNode.mesh;
         }
     
         player.onChange(() => {
@@ -148,17 +146,17 @@ export const setupMultiplayer = (
 
     // Update the player model's position and rotation every frame
     scene.registerBeforeRender(() => {
-        if (playerMesh) {
-            updatePlayerPosition(playerMesh, camera, room);
+        if (localPlayerMesh) {
+            updatePlayerPosition(localPlayerMesh, camera, room);
         }
     })
     
     // Dispose of the model when the player leaves
     roomState.players.onRemove((player, sessionId) => {
         console.log("Player left: ", player, sessionId);
-        const playerMesh = playerMeshes.get(sessionId);
-        if (playerMesh) {
-            playerMesh.dispose();
+        const removedPlayerMesh = playerMeshes.get(sessionId);
+        if (removedPlayerMesh) {
+            removedPlayerMesh.dispose();
             playerMeshes.delete(sessionId);
             playerStateManager.removePlayer(sessionId);
         }
