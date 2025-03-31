@@ -30,7 +30,7 @@ const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, is
         // Set initial position and rotation
         mesh.position.set(player.x, 0, player.z); // Force Y position to 0 for ground level
         mesh.rotationQuaternion = null;
-
+        
         if (isLocalPlayer) {
             // Hide the mesh
             mesh.isVisible = false;
@@ -46,6 +46,12 @@ const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, is
             mesh.isVisible = true;
             mesh.rotate(new Vector3(1, 0, 0), Math.PI);
 
+            // Enable collisions for remote players only
+            mesh.checkCollisions = true;
+            mesh.getChildMeshes().forEach(childMesh => {
+                childMesh.checkCollisions = true;
+            });
+
             // Enable bounding box visualization for the mesh and all its children
             mesh.showBoundingBox = true;
             mesh.getChildMeshes().forEach(childMesh => {
@@ -59,15 +65,6 @@ const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, is
             }
             mesh.refreshBoundingInfo(boundingInfoOptions);
 
-            // Create a semi-transparent collision box
-            const collisionBox = MeshBuilder.CreateBox("collisionBox_" + sessionId, {
-                width: 1,
-                height: 2,
-                depth: 1
-            }, scene);
-            collisionBox.parent = mesh;
-            collisionBox.position.y = -1;
-            
             // Start with idle animation for remote players
             if (animations.idle) {
                 animations.idle.play(true);
