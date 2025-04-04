@@ -5,7 +5,7 @@ export const SCENE_CONFIG = {
     ANTIALIASING: true,
     MAX_FPS: 60,
     
-    GRAVITY: -0.4, // Closer to 0 is less gravity
+    GRAVITY: -9.81, // More realistic gravity value
 
     CAMERA_CONFIG: {
         // player camera
@@ -17,18 +17,18 @@ export const SCENE_CONFIG = {
         cameraOffset: 1.85,
 
         // movement
-        speed: 0.50,
-        sprintSpeed: 1.00,
+        speed: 5,
+        sprintSpeed: 10,
         maxJumps: 2,
-        jumpPower: 0.2,
+        jumpPower: 25, // Reduced jump power for more natural movement
         inertia: 0.7,
 
         // interpolation
-        positionSmoothness: 0.15,
-        rotationSmoothness: 0.15,
+        positionSmoothness: 0.05,
+        rotationSmoothness: 0.1,
     },
     MODEL_CONFIG: {
-        scaling: new Vector3(2, 2, 2)
+        scaling: new Vector3(0.5, 0.5, 0.5)
     },
     GROUND_CONFIG: {
         width: 200,

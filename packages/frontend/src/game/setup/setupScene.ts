@@ -1,22 +1,33 @@
-import { Engine, Scene, Color4, Vector3 } from "@babylonjs/core";
+import { Scene, Vector3, Color4, Color3, HemisphericLight, MeshBuilder, Engine } from "@babylonjs/core";
 import { SCENE_CONFIG } from "../config";
 
-export const setupScene = (engine: Engine): Scene => {
+export const setupScene = async (engine: Engine): Promise<Scene> => {
     try {
-        const scene = new Scene(engine); // Create a new scene
-        scene.clearColor = new Color4(0.5, 0.5, 0.5, 1);
+        const scene = new Scene(engine);
         
-        scene.gravity = new Vector3(0, SCENE_CONFIG.GRAVITY, 0); // Gravity in babylon is measured in units/frame
+        // Scene Colour 
+        scene.clearColor = new Color4(0.5, 0.8, 0.9, 1);
+        scene.ambientColor = new Color3(0.3, 0.3, 0.3);
+
+        // Fog 
+        scene.fogMode = Scene.FOGMODE_EXP2;
+        // scene.fogColor = new Color3(0.5, 0.8, 0.9);
+        const skyBlue = new Color3(255/255, 206/255, 235/255);
+        scene.fogColor = skyBlue;
+        scene.fogDensity = 0.05;
+
+        // Collisions
         scene.collisionsEnabled = true;
 
-        scene.onPointerDown = (event) => { // 0 left click, 1 middle click, 2 right click
-            if (event.button === 0) { // Lock the camera to the player when they left click the screen
+        // Pointer Lock
+        scene.onPointerDown = (event) => {
+            if (event.button === 0) {
                 engine.enterPointerlock();
             }
-            if (event.button === 1) { // Unlock the camera when they middle mouse click the screen
+            if (event.button === 1) {
                 engine.exitPointerlock();
-                }
             }
+        }
         console.log("Scene setup complete");
         return scene;
     } catch (error) {
