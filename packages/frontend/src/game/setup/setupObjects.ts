@@ -56,6 +56,7 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
             scene
         );
         ground.checkCollisions = true;
+        ground.isPickable = true;
         ground.material = createGroundMaterial(scene);
 
         // Add platforms
@@ -67,6 +68,8 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
             }, scene);
             platform.position.set(x, y, z);
             platform.checkCollisions = true;
+            platform.isPickable = true;
+            platform.freezeWorldMatrix(); // Optimize performance for static objects
 
             // Visualize the collision box
             platform.showBoundingBox = true;

@@ -1,4 +1,4 @@
-import { Scene, UniversalCamera, AbstractMesh, Vector3, AnimationGroup, MeshBuilder, IMeshDataOptions } from "@babylonjs/core";
+import { Scene, UniversalCamera, AbstractMesh, Vector3, AnimationGroup, MeshBuilder, IMeshDataOptions, Space } from "@babylonjs/core";
 import { Room } from "colyseus.js";
 import { MyRoomState, Player } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
 import { createPlayerTransformNode, PlayerTransformNode } from "../game/player/createPlayerTransformNode";
@@ -23,18 +23,24 @@ interface InitializePlayerProps {
 const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, isLocalPlayer, camera }: InitializePlayerProps): Promise<PlayerTransformNode | undefined> => {
     try {
         const { mesh, transformNode, animations } = await createPlayerTransformNode(scene);
-        console.log(`Player created: ${sessionId}`, mesh);
+        // console.log(`Player created: ${sessionId}`, {
+        //     isLocal: isLocalPlayer,
+        //     meshScale: mesh?.scaling.toString(),
+        //     transformScale: transformNode?.scaling.toString()
+        // });
 
-        if (!mesh) return undefined;
-
+        if (!mesh || !transformNode) return undefined;
+        
         // Set initial position and rotation
         mesh.position.set(player.x, 0, player.z); // Force Y position to 0 for ground level
         mesh.rotationQuaternion = null;
         
         if (isLocalPlayer) {
-            // Hide the mesh
+            // Hide the local player mesh
             mesh.isVisible = false;
-            mesh.scaling = new Vector3(0.001, 0.001, 0.001); // This is a hack to make the mesh not visible. for some reason isVisible is not working will come back to this.
+            mesh.getChildMeshes().forEach(childMesh => {
+                childMesh.isVisible = false;
+            });
             
             // Set the camera to the player's position
             camera.position = mesh.position.clone();
@@ -44,15 +50,42 @@ const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, is
         } else {
             // For remote players
             mesh.isVisible = true;
-            mesh.rotate(new Vector3(1, 0, 0), Math.PI);
+            mesh.rotationQuaternion = null;
+            
+            // Set initial rotation - keep upright and face forward
+            mesh.rotation.x = 0;
+            mesh.rotation.y = player.rotationY + Math.PI; // Add PI to face forward
+            mesh.rotation.z = 0;
+            
+            // console.log(`Remote player ${sessionId} initial state:`, {
+            //     rotation: mesh.rotation.toString(),
+            //     position: mesh.position.toString(),
+            //     scaling: mesh.scaling.toString()
+            // });
 
             // Enable collisions for remote players only
             mesh.checkCollisions = true;
+            mesh.ellipsoid = SCENE_CONFIG.CAMERA_CONFIG.ellipsoid;
+            mesh.ellipsoidOffset = SCENE_CONFIG.CAMERA_CONFIG.ellipsoidOffset;
+            
+            // Enable collisions on the root mesh only
             mesh.getChildMeshes().forEach(childMesh => {
-                childMesh.checkCollisions = true;
+                childMesh.checkCollisions = false;
             });
 
-            // Enable bounding box visualization for the mesh and all its children
+            // Create a collision box for better player interaction
+            const collisionBox = MeshBuilder.CreateBox("collisionBox_" + sessionId, {
+                width: 1,
+                height: 2,
+                depth: 1
+            }, scene);
+            collisionBox.parent = mesh;
+            collisionBox.position = new Vector3(0, 1, 0);
+            collisionBox.visibility = 0;
+            collisionBox.checkCollisions = true;
+            collisionBox.isPickable = false;
+
+            
             mesh.showBoundingBox = true;
             mesh.getChildMeshes().forEach(childMesh => {
                 childMesh.showBoundingBox = true;
@@ -60,16 +93,15 @@ const initializePlayerMesh = async ({ scene, sessionId, player, playerMeshes, is
 
             // Compute the bounding box info to ensure it's updated
             mesh.computeWorldMatrix(true);
-            const boundingInfoOptions: IMeshDataOptions = {
-                // applySkeleton: true,
-            }
-            mesh.refreshBoundingInfo(boundingInfoOptions);
+            mesh.refreshBoundingInfo({});
 
-            // Start with idle animation for remote players
-            if (animations.idle) {
-                animations.idle.play(true);
-            }
         }
+
+        // Start with idle animation for remote players
+        if (animations.idle) {
+            animations.idle.play(true);
+        }
+        
     
         playerMeshes.set(sessionId, mesh);
         return {mesh, transformNode, animations};
@@ -154,9 +186,14 @@ export const setupMultiplayer = (
                 
                 interpolatePlayerPosition(currentPlayerMesh, targetPosition);
                 currentPlayerMesh.rotationQuaternion = null;
+                currentPlayerMesh.rotation.x = 0;
+                currentPlayerMesh.rotation.y = player.rotationY + Math.PI; // Add PI to face forward
+                currentPlayerMesh.rotation.z = 0;
                 
-                // Try rotating the mesh directly
-                currentPlayerMesh.rotation.y = player.rotationY;
+                // console.log(`Remote player ${sessionId} update:`, {
+                //     rotation: currentPlayerMesh.rotation.toString(),
+                //     position: currentPlayerMesh.position.toString()
+                // });
             }
         });
     });

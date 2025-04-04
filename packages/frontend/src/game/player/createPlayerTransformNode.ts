@@ -36,11 +36,20 @@ const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | unde
     modelContainer.meshes.forEach(mesh => {
         // console.log("Adding mesh to scene: ", mesh);
         scene.addMesh(mesh);
-        mesh.rotate(new Vector3(1, 0, 0), Math.PI); // Rotate the mesh 180 degrees around the X axis to flip it right-side up
+        mesh.scaling = new Vector3(1, 1, 1);
+        
+        // console.log(`Initial mesh state for ${mesh.name}:`, {
+        //     rotation: mesh.rotation.toString(),
+        //     position: mesh.position.toString(),
+        //     scaling: mesh.scaling.toString()
+        // });
     });
 
     // Probably don't need to add these to the scene EVERY time we load a player
     modelContainer.animationGroups.forEach(group => {
+        if (scene.animationGroups.find(g => g.name === group.name)) { // If the animation group already exists, remove it || This is to prevent duplicate animation groups
+            scene.removeAnimationGroup(group);
+        }
         scene.addAnimationGroup(group);
     });
     // console.log("Scene Animation Groups: ", scene.animationGroups);
@@ -51,6 +60,13 @@ const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | unde
         console.error("Error loading player mesh: ", modelUrl);
         return { mesh: undefined, animations: {} };
     } 
+    
+    // Set initial rotation to face forward
+    if (playerMesh) {
+        // Model is naturally upright but facing backward, so rotate 180° around Y to face forward
+        playerMesh.rotation.y = Math.PI;
+        console.log("Set player mesh to face forward:", playerMesh.rotation);
+    }
     
     const animations = {
         jump: modelContainer.animationGroups.find(group => group.name === "jump"),
@@ -83,8 +99,10 @@ export const createPlayerTransformNode = async (scene: Scene): Promise<PlayerTra
         transformNode = new TransformNode("playerTransformNode", scene);
         transformNode.addChild(mesh);
 
+        // Set initial transform
         transformNode.scaling = SCENE_CONFIG.MODEL_CONFIG.scaling;
         transformNode.position = SCENE_CONFIG.CAMERA_CONFIG.startPosition;
+        transformNode.rotation = new Vector3(0, 0, 0); // Keep transform node rotation neutral
 
         // Add the mesh to the scene
         scene.addMesh(mesh);

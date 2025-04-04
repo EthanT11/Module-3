@@ -22,59 +22,57 @@ const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
     useEffect( () => {
-        const canvas = reactCanvas.current; // Get the canvas element
-        if (!canvas) {
-            console.error("CreateEnvironment: Canvas not found")
-            return;
-        }
+        let engine: Engine;
 
-        // Init
-        const engine = new Engine(canvas, SCENE_CONFIG.ANTIALIASING)
-        engine.setHardwareScalingLevel(1.0); // Helps with performance on low end devices
-        engine.maxFPS = SCENE_CONFIG.MAX_FPS;
+        const setupGame = async () => {
+            const canvas = reactCanvas.current;
+            if (!canvas) {
+                console.error("CreateEnvironment: Canvas not found")
+                return;
+            }
 
-        // Engine built in loading screen
-        engine.loadingScreen.displayLoadingUI();
-        engine.loadingScreen.loadingUIBackgroundColor = "white";
+            // Init
+            engine = new Engine(canvas, SCENE_CONFIG.ANTIALIASING)
+            engine.setHardwareScalingLevel(1.0); // Helps with performance on low end devices
+            engine.maxFPS = SCENE_CONFIG.MAX_FPS;
 
-        try {
-            // Scene setup
-            const scene = setupScene(engine);
-            setupLight(scene);
-            setupObjects(scene);
-            
-            // Player setup
-            // TODO: move the camera setup directly into the player setup
-            const camera = setupPlayerCamera(scene, canvas);
+            // Start the loading screen
+            // TODO: Customize the loading screen
+            engine.loadingScreen.displayLoadingUI();
+            engine.loadingScreen.loadingUIBackgroundColor = "white";
 
-            // Create the player state manager
-            const playerStateManager = new PlayerStateManager();
-            setupPlayer(scene, camera, playerStateManager);
-            setupMultiplayer(scene, camera, playerStateManager, room);
+            try {
+                const scene = await setupScene(engine);
+                // TODO: Move setupLight and Objects into the scene function
+                setupLight(scene); 
+                setupObjects(scene);
+                
+                const camera = setupPlayerCamera(scene, canvas);
+                const playerStateManager = new PlayerStateManager();
+                setupPlayer(scene, camera, playerStateManager); // TODO: Probably consolidate this into the setupPlayerCamera function
+                setupMultiplayer(scene, camera, playerStateManager, room);
 
-            scene.executeWhenReady(() => {
-                // Hide the loading screen when the scene is ready
-                engine.loadingScreen.hideLoadingUI();
-
-                engine.runRenderLoop(() => { 
-                    scene.render() // Render the scene
+                scene.executeWhenReady(() => {
+                    engine.loadingScreen.hideLoadingUI();
+                    engine.runRenderLoop(() => { 
+                        scene.render()
+                    })
                 })
-            })
-        } catch (error) {
-            console.error("CreateEnvironment: Error setting up scene", error);
-            engine.loadingScreen.hideLoadingUI();
-            // TODO: when we have a place to boot people if failed, this is where we do it
-        }
+            } catch (error) {
+                console.error("CreateEnvironment: Error setting up scene", error);
+                engine.loadingScreen.hideLoadingUI();
+            }
+        };
 
+        setupGame();
 
         window.addEventListener("resize", () => {
-            engine.resize() // Resize the engine when the window is resized
+            engine.resize()
         })
 
         return () => {
-            engine.dispose() // Dispose of the engine when the component unmounts | This is for clean up and memory management
+            engine.dispose()
         }
-
     }, [])
 
     return <canvas ref={reactCanvas} style={{ width: "100%", height: "100vh" }} />
