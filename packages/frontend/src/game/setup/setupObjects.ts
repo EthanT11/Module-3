@@ -59,7 +59,34 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
         ground.isPickable = true;
         ground.material = createGroundMaterial(scene);
 
-        // Add platforms
+        // Walls
+        const createWall = (x: number, z: number, width: number, depth: number, height: number) => {
+            const wall = MeshBuilder.CreateBox("wall", { 
+                width: width,
+                height: height,
+                depth: depth
+            }, scene);
+            wall.position.set(x, height/2, z); // Position at half height so it sits on the ground
+            wall.checkCollisions = true;
+            wall.isPickable = true;
+            wall.freezeWorldMatrix(); // Optimize performance for static objects
+            
+            // TODO: Get a material for the walls
+            wall.material = createGroundMaterial(scene); 
+            return wall;
+        };
+
+        // TODO: Probably start a config file for object sizing
+        const wallHeight = 10;
+        const wallThickness = 1;
+
+        // Walls around the ground perimeter
+        createWall(0, -SCENE_CONFIG.GROUND_CONFIG.height/2, SCENE_CONFIG.GROUND_CONFIG.width, wallThickness, wallHeight);
+        createWall(0, SCENE_CONFIG.GROUND_CONFIG.height/2, SCENE_CONFIG.GROUND_CONFIG.width, wallThickness, wallHeight);
+        createWall(SCENE_CONFIG.GROUND_CONFIG.width/2, 0, wallThickness, SCENE_CONFIG.GROUND_CONFIG.height, wallHeight);
+        createWall(-SCENE_CONFIG.GROUND_CONFIG.width/2, 0, wallThickness, SCENE_CONFIG.GROUND_CONFIG.height, wallHeight);
+
+        // Platforms
         const createPlatform = (x: number, y: number, z: number) => {
             const platform = MeshBuilder.CreateBox("platform", { 
                 width: 4,
