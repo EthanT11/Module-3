@@ -29,14 +29,5 @@ export const SCENE_CONFIG = {
     },
     MODEL_CONFIG: {
         scaling: new Vector3(0.5, 0.5, 0.5)
-    },
-    GROUND_CONFIG: {
-        width: 10,
-        height: 40,
-        yOffset: 1.1,
-    },
-    LIGHT_CONFIG: {
-        intensity: 0.8,
-        position: new Vector3(0, 20, 0),
-    },
+    }
 };

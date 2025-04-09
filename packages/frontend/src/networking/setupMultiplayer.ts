@@ -1,10 +1,12 @@
 import { Scene, UniversalCamera, AbstractMesh, Vector3, AnimationGroup, MeshBuilder, IMeshDataOptions, Space } from "@babylonjs/core";
 import { Room } from "colyseus.js";
 import { MyRoomState, Player } from "../../../backend-colyseus/src/rooms/schema/MyRoomState";
+import { PlayerStateManager } from "../game/player/PlayerState";
 import { createPlayerTransformNode, PlayerTransformNode } from "../game/player/createPlayerTransformNode";
 import { interpolatePlayerPosition } from "../game/player/interpolatePlayer";
+
 import { SCENE_CONFIG } from "../game/config";
-import { PlayerStateManager } from "../game/player/PlayerState";
+import { MAP_CONFIG } from "../game/map/mapConfig";
 
 export const BACKEND_URL = import.meta.env.PROD 
     ? `wss://${import.meta.env.VITE_BACKEND_URL}` // Production URL
@@ -118,7 +120,7 @@ const updatePlayerPosition = (
     room: Room
 ) => {
     const targetPosition = camera.position.clone();
-    targetPosition.y -= SCENE_CONFIG.GROUND_CONFIG.yOffset;
+    targetPosition.y -= MAP_CONFIG.GROUND_CONFIG.yOffset;
 
     interpolatePlayerPosition(playerModel, targetPosition);
 

@@ -1,7 +1,8 @@
 import { Scene, UniversalCamera, Vector3 } from "@babylonjs/core";
-import { SCENE_CONFIG } from "../config";
+import { MAP_CONFIG } from "../map/mapConfig";
 import { PlayerTransformNode } from './createPlayerTransformNode';
 import { PlayerStateManager, PlayerAnimation } from "./PlayerState";
+import { SCENE_CONFIG } from "../config";
 
 export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, player: PlayerTransformNode, playerStateManager: PlayerStateManager) => {
     const localPlayer = playerStateManager.getLocalPlayer();
@@ -45,8 +46,8 @@ export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, play
             jumpVelocity += GRAVITY * scene.getEngine().getDeltaTime() / 1000;
 
             // Check if landed
-            if (camera.position.y <= SCENE_CONFIG.GROUND_CONFIG.yOffset) {
-                camera.position.y = SCENE_CONFIG.GROUND_CONFIG.yOffset;
+            if (camera.position.y <= MAP_CONFIG.GROUND_CONFIG.yOffset) {
+                camera.position.y = MAP_CONFIG.GROUND_CONFIG.yOffset;
                 localPlayer.isJumping = false;
                 jumpCount = 0;
                 jumpVelocity = 0;
@@ -58,14 +59,14 @@ export const handlePlayerMovement = (camera: UniversalCamera, scene: Scene, play
                     player.animations.idle.play(true);
                 }
             }
-        } else if (camera.position.y > SCENE_CONFIG.GROUND_CONFIG.yOffset) {
+        } else if (camera.position.y > MAP_CONFIG.GROUND_CONFIG.yOffset) {
             // Only apply gravity when above ground
             camera.position.y += jumpVelocity * scene.getEngine().getDeltaTime() / 1000;
             jumpVelocity += GRAVITY * scene.getEngine().getDeltaTime() / 1000;
 
             // Check if landed
-            if (camera.position.y <= SCENE_CONFIG.GROUND_CONFIG.yOffset) {
-                camera.position.y = SCENE_CONFIG.GROUND_CONFIG.yOffset;
+            if (camera.position.y <= MAP_CONFIG.GROUND_CONFIG.yOffset) {
+                camera.position.y = MAP_CONFIG.GROUND_CONFIG.yOffset;
                 jumpVelocity = 0;
             }
         }

@@ -1,6 +1,5 @@
-import { Scene, Vector3, Color4, Color3, HemisphericLight, MeshBuilder, Engine } from "@babylonjs/core";
-import { SCENE_CONFIG } from "../config";
-
+import { Scene, Color4, Color3, Engine } from "@babylonjs/core";
+import { MAP_CONFIG } from "../map/mapConfig";
 export const setupScene = async (engine: Engine): Promise<Scene> => {
     try {
         const scene = new Scene(engine);
@@ -11,11 +10,8 @@ export const setupScene = async (engine: Engine): Promise<Scene> => {
 
         // Fog 
         scene.fogMode = Scene.FOGMODE_EXP2;
-        
-        // scene.fogColor = new Color3(0.5, 0.8, 0.9);
-        const skyBlue = new Color3(255/255, 206/255, 235/255);
-        scene.fogColor = skyBlue;
-        scene.fogDensity = 0.05;
+        scene.fogColor = MAP_CONFIG.FOG_CONFIG.color;
+        scene.fogDensity = MAP_CONFIG.FOG_CONFIG.density;
 
         // Collisions
         scene.collisionsEnabled = true;
