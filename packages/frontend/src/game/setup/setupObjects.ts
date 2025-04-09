@@ -112,7 +112,7 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
         const createMap = () => {
             const wallHeight = 1;
             const wallThickness = 1;
-            // 0 = Empty
+            // 0 = Empty // Ground
             // 1 = Wall
             // 2 = Platform
             // 3 = Spawn Point
@@ -141,8 +141,8 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
                     if (map[i][j] === 1) { // Wall
-                        const x = -groundWidth/2 + j * cellWidth + cellWidth/2;
-                        const z = -groundHeight/2 + i * cellDepth + cellDepth/2;
+                        const x = -groundWidth/2 + j * cellWidth + cellWidth/2; // Center the wall on the cell
+                        const z = -groundHeight/2 + i * cellDepth + cellDepth/2; 
                         createWall(x, z, cellWidth, cellDepth, wallHeight);
                     }
                     if (map[i][j] === 2) { // Platform
