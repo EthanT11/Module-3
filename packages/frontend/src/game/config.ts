@@ -31,8 +31,8 @@ export const SCENE_CONFIG = {
         scaling: new Vector3(0.5, 0.5, 0.5)
     },
     GROUND_CONFIG: {
-        width: 50,
-        height: 50,
+        width: 10,
+        height: 40,
         yOffset: 1.1,
     },
     LIGHT_CONFIG: {

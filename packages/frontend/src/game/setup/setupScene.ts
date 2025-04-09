@@ -11,6 +11,7 @@ export const setupScene = async (engine: Engine): Promise<Scene> => {
 
         // Fog 
         scene.fogMode = Scene.FOGMODE_EXP2;
+        
         // scene.fogColor = new Color3(0.5, 0.8, 0.9);
         const skyBlue = new Color3(255/255, 206/255, 235/255);
         scene.fogColor = skyBlue;

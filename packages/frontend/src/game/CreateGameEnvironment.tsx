@@ -23,6 +23,7 @@ const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
 
     useEffect( () => {
         let engine: Engine;
+        
 
         const setupGame = async () => {
             const canvas = reactCanvas.current;
@@ -30,7 +31,7 @@ const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
                 console.error("CreateEnvironment: Canvas not found")
                 return;
             }
-
+            
             // Init
             engine = new Engine(canvas, SCENE_CONFIG.ANTIALIASING)
             engine.setHardwareScalingLevel(1.0); // Helps with performance on low end devices

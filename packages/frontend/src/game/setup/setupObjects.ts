@@ -1,7 +1,7 @@
 import { Scene, MeshBuilder, StandardMaterial, CubeTexture, Texture, Color3 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import { SCENE_CONFIG } from "../config";
-import { createGroundMaterial } from "../materials/groundMaterial";
+import { createGroundMaterial } from "../map/groundMaterial";
 import useSupabase from "../../hooks/useSupabase";
 
 
@@ -75,17 +75,6 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
             wall.material = createGroundMaterial(scene); 
             return wall;
         };
-
-        // TODO: Probably start a config file for object sizing
-        const wallHeight = 10;
-        const wallThickness = 1;
-
-        // Walls around the ground perimeter
-        createWall(0, -SCENE_CONFIG.GROUND_CONFIG.height/2, SCENE_CONFIG.GROUND_CONFIG.width, wallThickness, wallHeight);
-        createWall(0, SCENE_CONFIG.GROUND_CONFIG.height/2, SCENE_CONFIG.GROUND_CONFIG.width, wallThickness, wallHeight);
-        createWall(SCENE_CONFIG.GROUND_CONFIG.width/2, 0, wallThickness, SCENE_CONFIG.GROUND_CONFIG.height, wallHeight);
-        createWall(-SCENE_CONFIG.GROUND_CONFIG.width/2, 0, wallThickness, SCENE_CONFIG.GROUND_CONFIG.height, wallHeight);
-
         // Platforms
         const createPlatform = (x: number, y: number, z: number) => {
             const platform = MeshBuilder.CreateBox("platform", { 
@@ -104,18 +93,91 @@ export const setupObjects = async (scene: Scene): Promise<void> => {
             return platform;
         };
 
-        createPlatform(5, 2, 0);
-        createPlatform(10, 4, 3);
-        createPlatform(15, 6, -2);
-        createPlatform(8, 8, 1);
-        createPlatform(12, 10, -3);
-        createPlatform(16, 12, 2);
-        createPlatform(18, 14, -1);
-        createPlatform(20, 16, 3);
-        createPlatform(22, 18, -2);
-        createPlatform(24, 20, 1);
-        createPlatform(26, 22, -3);
-        createPlatform(28, 24, 2);
+        // TODO: Probably start a config file for object sizing
+        
+        // Walls around the ground perimeter
+        
+        
+
+        // 200/10
+        // w = Wall
+        // p = Platform
+        //       200
+        // [W , W , W , W , W , W]
+        // [W , _ , _ , _ , _ , W]  2
+        // [W , P , S1 , S2 , _ , W]  0
+        // [W , _ , _ , _ , _ , W]  0
+        // [W , W , W , W , W , W]
+        
+        const createMap = () => {
+            const wallHeight = 1;
+            const wallThickness = 1;
+            // 0 = Empty
+            // 1 = Wall
+            // 2 = Platform
+            // 3 = Spawn Point
+            // 20 x 10 
+                                // j = 2
+            const map = [       // ^
+                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // i = 0
+                            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], // i = 1
+                            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1],
+                            [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1],
+                            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1],
+                            [1, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                            [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        ];
+            
+            const groundWidth = SCENE_CONFIG.GROUND_CONFIG.width;
+            const groundHeight = SCENE_CONFIG.GROUND_CONFIG.height;
+            
+            // Calculate cell dimensions | This gets the width and height of each cell in the map based on the ground size so it can scale to different ground sizes
+            const cellWidth = groundWidth / map[0].length;
+            const cellDepth = groundHeight / map.length;
+            
+            for (let i = 0; i < map.length; i++) {
+                for (let j = 0; j < map[i].length; j++) {
+                    if (map[i][j] === 1) { // Wall
+                        const x = -groundWidth/2 + j * cellWidth + cellWidth/2;
+                        const z = -groundHeight/2 + i * cellDepth + cellDepth/2;
+                        createWall(x, z, cellWidth, cellDepth, wallHeight);
+                    }
+                    if (map[i][j] === 2) { // Platform
+                        const x = -groundWidth/2 + j * cellWidth + cellWidth/2;
+                        const z = -groundHeight/2 + i * cellDepth + cellDepth/2;
+                        createPlatform(x, 0, z);
+                    }
+                    if (map[i][j] === 3) { // Spawn Point
+                        const spawnPoint = MeshBuilder.CreateSphere("spawnPoint", { diameter: 1 }, scene);
+                        const x = -groundWidth/2 + j * cellWidth + cellWidth/2;
+                        const z = -groundHeight/2 + i * cellDepth + cellDepth/2;
+                        spawnPoint.position.set(x, 0, z);
+                        console.log("Spawn point created at", x, z);
+                    }
+                }
+            }
+            return map;
+        }
+
+        const map = createMap();
+        console.log(map);
+
+
+        // createPlatform(5, 2, 0);
+        // createPlatform(10, 4, 3);
+        // createPlatform(15, 6, -2);
+        // createPlatform(8, 8, 1);
+        // createPlatform(12, 10, -3);
+        // createPlatform(16, 12, 2);
+        // createPlatform(18, 14, -1);
+        // createPlatform(20, 16, 3);
+        // createPlatform(22, 18, -2);
+        // createPlatform(24, 20, 1);
+        // createPlatform(26, 22, -3);
+        // createPlatform(28, 24, 2);
 
         console.log("Objects loaded");
     } catch (error) {
