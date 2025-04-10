@@ -45,6 +45,12 @@ const createPlatform = (x: number, y: number, z: number, scene: Scene) => {
     // [W , _ , _ , _ , _ , W]  0
     // [W , W , W , W , W , W]
 const createMap = (scene: Scene) => {
+    // Random Fog
+    scene.fogMode = Scene.FOGMODE_EXP2;
+    scene.fogColor = new Color3(Math.random(), Math.random(), Math.random());
+    scene.fogDensity = (Math.random() * 0.05) + 0.01;
+
+    
     // 0 = Empty // Ground
     // 1 = Wall
     // 2 = Platform

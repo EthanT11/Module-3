@@ -8,11 +8,6 @@ export const setupScene = async (engine: Engine): Promise<Scene> => {
         scene.clearColor = new Color4(0.5, 0.8, 0.9, 1);
         scene.ambientColor = new Color3(0.3, 0.3, 0.3);
 
-        // Fog 
-        scene.fogMode = Scene.FOGMODE_EXP2;
-        scene.fogColor = MAP_CONFIG.FOG_CONFIG.color;
-        scene.fogDensity = MAP_CONFIG.FOG_CONFIG.density;
-
         // Collisions
         scene.collisionsEnabled = true;
 

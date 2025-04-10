@@ -15,11 +15,6 @@ export const MAP_CONFIG = {
         position: new Vector3(0, 20, 0),
     },
 
-    FOG_CONFIG: {
-        color: new Color3(0.5, 0.5, 0.5),
-        density: 0.02,
-    },
-
     GROUND_CONFIG: {
         assetFolder: "lichen_rock",
         uvScale: 10,
