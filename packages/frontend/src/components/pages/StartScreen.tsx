@@ -15,7 +15,7 @@ const StartScreen = () => {
     }
   
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
+      <div className="flex flex-col items-center justify-center h-screen bg-teal-900">
         <h1 className="text-4xl font-bold text-center text-black">Start Screen</h1>
         <button 
           className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 mt-4"

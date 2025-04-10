@@ -40,7 +40,7 @@ const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
             // Start the loading screen
             // TODO: Customize the loading screen
             engine.loadingScreen.displayLoadingUI();
-            engine.loadingScreen.loadingUIBackgroundColor = "white";
+            engine.loadingScreen.loadingUIBackgroundColor = "teal";
 
             try {
                 const scene = await setupScene(engine);

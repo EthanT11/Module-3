@@ -6,6 +6,10 @@ import { Vector3, Color3 } from "@babylonjs/core";
 // rocky_terrain
 
 export const MAP_CONFIG = {
+    SPAWN_CONFIG: {
+        startPosition: new Vector3(0, 0, 0), // Change to start position of the map
+    },
+
     LIGHT_CONFIG: {
         intensity: 0.8,
         position: new Vector3(0, 20, 0),
