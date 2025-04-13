@@ -10,6 +10,11 @@ export const MAP_CONFIG = {
         startPosition: new Vector3(0, 0, 0), // Change to start position of the map
     },
 
+    MAZE_CONFIG: {
+        width: 12,
+        height: 12,
+    },
+
     LIGHT_CONFIG: {
         intensity: 0.8,
         position: new Vector3(0, 20, 0),
