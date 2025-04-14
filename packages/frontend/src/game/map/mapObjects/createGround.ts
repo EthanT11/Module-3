@@ -1,6 +1,6 @@
 import { MeshBuilder, Scene } from "@babylonjs/core";
-import { MAP_CONFIG } from "./mapConfig";
-import createTexture from "./createTexture";
+import { MAP_CONFIG } from "../mapConfig";
+import createTexture from "../utility/createTexture";
 
 const createGround = (scene: Scene) => {
     const ground = MeshBuilder.CreateGround(

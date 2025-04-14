@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Client, Room, RoomAvailable } from "colyseus.js";
 import { BACKEND_URL } from "../../networking/setupMultiplayer";
 import CreateGameEnvironment from "../../game/CreateGameEnvironment";
-
+import { PlayerStateManager } from "../../game/player/PlayerState";
 
 // ROOM SCREEN
 // TODO: Create serpate component
@@ -16,7 +16,8 @@ const RoomScreen = () => {
     const [rooms, setRooms] = useState<RoomAvailable[]>([]); // TODO: fix type 
     const [gameStarted, setGameStarted] = useState(false);
     const [currentRoom, setCurrentRoom] = useState<Room>();
-  
+    const [isHost, setIsHost] = useState(false);
+
     const colyseusClient: Client = new Client(BACKEND_URL); // Colyseus client
     const colyseusRoomSchema: string = "my_room"; // FINDME: this is the schema for colyseus, will eventually change the name. Or make this more dynamic.
   
@@ -26,12 +27,14 @@ const RoomScreen = () => {
           try {
             const availableRooms = await colyseusClient.getAvailableRooms();
             setRooms(availableRooms);
+            setIsHost(false);
             
             // NOTE: This is a temporary solution to create a new room if no rooms are open
             // It helps with testing and development to not have to manually create a room
             if (availableRooms.length === 0) { // If no rooms are open, create a new room 
               const newRoom = await colyseusClient.create(colyseusRoomSchema);
               console.log("Created new room. Room ID: ", newRoom.roomId);
+              setIsHost(true);
               setCurrentRoom(newRoom);
               setGameStarted(true);
             }
@@ -74,7 +77,7 @@ const RoomScreen = () => {
     
     // If the game has started and there is a current room, render the game environment
     if (gameStarted && currentRoom) {
-      return <CreateGameEnvironment room={currentRoom} />;
+      return <CreateGameEnvironment room={currentRoom} isHost={isHost} />;
     }
   
     return (

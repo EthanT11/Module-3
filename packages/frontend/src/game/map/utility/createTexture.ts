@@ -1,7 +1,7 @@
 import { Texture } from "@babylonjs/core";
 import { Scene } from "@babylonjs/core";
 import { StandardMaterial } from "@babylonjs/core";
-import useSupabase from "../../hooks/useSupabase";
+import useSupabase from "../../../hooks/useSupabase";
 
 interface TextureProps {
     name: string;

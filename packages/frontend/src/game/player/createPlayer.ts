@@ -1,10 +1,10 @@
 import { AbstractMesh, Scene, UniversalCamera, TransformNode } from "@babylonjs/core";
 // TODO: Set up index.ts for player setup
-import { handlePlayerMovement } from "../player/handlePlayerMovement";
-import { createPlayerTransformNode, PlayerTransformNode } from "../player/createPlayerTransformNode";
-import { PlayerStateManager } from "../player/PlayerState";
+import { handlePlayerMovement } from "./handlePlayerMovement";
+import { createPlayerTransformNode, PlayerTransformNode } from "./createPlayerTransformNode";
+import { PlayerStateManager } from "./PlayerState";
 
-export const setupPlayer = async (scene: Scene, camera: UniversalCamera, playerStateManager: PlayerStateManager): Promise<void> => {
+export const createPlayer = async (scene: Scene, camera: UniversalCamera, playerStateManager: PlayerStateManager): Promise<void> => {
     let playerModel: PlayerTransformNode | undefined;
 
     try {

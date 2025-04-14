@@ -1,6 +1,6 @@
 import { CubeTexture, StandardMaterial, MeshBuilder, Scene, Texture } from "@babylonjs/core";
 
-import useSupabase from "../../hooks/useSupabase";
+import useSupabase from "../../../hooks/useSupabase";
 
 const createSkyBox = (scene: Scene) => {
     const { getAssetUrl } = useSupabase();

@@ -1,21 +1,28 @@
-
 import supabase from "../supabaseClient";
+
 const useSupabase = () => {
     // Get the texture URL
     function getAssetUrl(bucket: string, fileName: string) {
-        const { data } = supabase
-            .storage
-            .from(bucket)
-            .getPublicUrl(fileName)
+        try {
+            // console.log(`Getting URL for ${bucket}/${fileName}`);
+            const { data } = supabase
+                .storage
+                .from(bucket)
+                .getPublicUrl(fileName);
 
-        if (!data) {
-            throw new Error(`useSupabase: Error getting texture URL: ${bucket}/${fileName}`)
+            if (!data?.publicUrl) {
+                throw new Error(`No public URL for: ${bucket}/${fileName}`);
+            }
+            
+            // console.log("Got Supabase URL:", data.publicUrl);
+            return data.publicUrl;
+        } catch (error) {
+            console.error("Supabase getAssetUrl error:", error);
+            throw error;
         }
-        
-        return data.publicUrl
     }
 
-    return { getAssetUrl }
+    return { getAssetUrl };
 }
 
 export default useSupabase;

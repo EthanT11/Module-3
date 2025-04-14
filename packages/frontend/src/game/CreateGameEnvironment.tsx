@@ -2,13 +2,12 @@ import { Engine } from "@babylonjs/core"
 import { Room } from "colyseus.js";
 import { useRef, useEffect } from "react"
 import { setupMultiplayer } from "../networking/setupMultiplayer";
-import { setupPlayerCamera } from "./player/setupPlayerCamera";
-import { setupLight } from "./setup/setupLight";
-import { setupScene } from "./setup/setupScene";
-import { setupObjects } from "./setup/setupObjects";
+import createPlayerCamera from "./player/createPlayerCamera";
+import { setupScene } from "./setupScene";
 import { SCENE_CONFIG } from "./config";
-import { setupPlayer } from "./setup/setupPlayer";
+import { createPlayer } from "./player/createPlayer";
 import { PlayerStateManager } from "./player/PlayerState";
+import loadMap from "./map/loadMap";
 
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
@@ -17,7 +16,7 @@ import { PlayerStateManager } from "./player/PlayerState";
 // TEXTURES
 // https://polyhaven.com/a/rocky_terrain_02 | Covered under CC0 license 
 
-const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
+const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }): JSX.Element => {
     // TODO: Look into better error handling for the engine and canvas
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
 
@@ -43,14 +42,18 @@ const CreateGameEnvironment = ({ room }: { room: Room }): JSX.Element => {
             engine.loadingScreen.loadingUIBackgroundColor = "teal";
 
             try {
-                const scene = await setupScene(engine);
-                // TODO: Move setupLight and Objects into the scene function
-                setupLight(scene); 
-                setupObjects(scene);
-                
-                const camera = setupPlayerCamera(scene, canvas);
+                // Initialize the player state manager
                 const playerStateManager = new PlayerStateManager();
-                setupPlayer(scene, camera, playerStateManager); // TODO: Probably consolidate this into the setupPlayerCamera function
+
+                // Setup the scene
+                const scene = await setupScene(engine);
+                loadMap(scene, playerStateManager, isHost, room);
+
+                // Setup the player
+                const camera = createPlayerCamera(scene, canvas);
+                createPlayer(scene, camera, playerStateManager); // TODO: Probably consolidate this into the setupPlayerCamera function
+                
+                // Setup the multiplayer
                 setupMultiplayer(scene, camera, playerStateManager, room);
 
                 scene.executeWhenReady(() => {

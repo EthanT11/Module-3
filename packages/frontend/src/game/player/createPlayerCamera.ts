@@ -1,7 +1,7 @@
 import { Scene, UniversalCamera, MeshBuilder, StandardMaterial, Color3 } from "@babylonjs/core";
 import { SCENE_CONFIG } from "../config";
 
-export const setupPlayerCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalCamera => {
+const createPlayerCamera = (scene: Scene, canvas: HTMLCanvasElement): UniversalCamera => {
     try {
         const camera = new UniversalCamera(
             "camera", 
@@ -31,3 +31,5 @@ export const setupPlayerCamera = (scene: Scene, canvas: HTMLCanvasElement): Univ
         
     }
 }
+
+export default createPlayerCamera;

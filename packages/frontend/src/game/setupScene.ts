@@ -1,5 +1,6 @@
 import { Scene, Color4, Color3, Engine } from "@babylonjs/core";
-import { MAP_CONFIG } from "../map/mapConfig";
+import { MAP_CONFIG } from "./map/mapConfig";
+
 export const setupScene = async (engine: Engine): Promise<Scene> => {
     try {
         const scene = new Scene(engine);

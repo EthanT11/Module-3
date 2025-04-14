@@ -1,4 +1,5 @@
 import { AssetContainer, LoadAssetContainerAsync, AbstractMesh, Scene, LoadAssetContainerOptions, TransformNode, Vector3 } from "@babylonjs/core";
+import "@babylonjs/loaders/glTF";
 import { SCENE_CONFIG } from "../config";
 import useSupabase from "../../hooks/useSupabase";
 
@@ -14,67 +15,81 @@ export interface PlayerTransformNode {
 }
 
 const loadPlayerMesh = async (scene: Scene): Promise<{ mesh: AbstractMesh | undefined, animations: any }> => {
-    const { getAssetUrl } = useSupabase();
-    const modelUrl = getAssetUrl("models", "botwithanimsnohead.glb");
-    const rootMeshName = "__root__"; // We need the root mesh to be the player model
+    // TODO: Put this in config
+    const modelFile = "botwithanimsnohead.glb";
+    let modelUrl: string;
 
+    try {
+        const { getAssetUrl } = useSupabase();
+        modelUrl = getAssetUrl("models", modelFile);
+        // console.log("Attempting to load from Supabase:", modelUrl);
+    } catch (error) {
+        console.warn("Failed to get model from Supabase, using local file:", error);
+        modelUrl = `/models/${modelFile}`;
+        console.warn("Falling back to local file:", modelUrl);
+    }
+    
     let playerMesh: AbstractMesh | undefined = undefined;
-
-    // AssetContainer options
-    const containerOptions: LoadAssetContainerOptions = {
-        pluginExtension: ".glb"
-    }
     
-    // Load the player model from Supabase and place it in a asset container
-    const modelContainer: AssetContainer = await LoadAssetContainerAsync(
-        modelUrl,
-        scene,
-        containerOptions
-    )
-    
-    // Add all meshes and animations to the scene
-    modelContainer.meshes.forEach(mesh => {
-        // console.log("Adding mesh to scene: ", mesh);
-        scene.addMesh(mesh);
-        mesh.scaling = new Vector3(1, 1, 1);
-        
-        // console.log(`Initial mesh state for ${mesh.name}:`, {
-        //     rotation: mesh.rotation.toString(),
-        //     position: mesh.position.toString(),
-        //     scaling: mesh.scaling.toString()
-        // });
-    });
-
-    // Probably don't need to add these to the scene EVERY time we load a player
-    modelContainer.animationGroups.forEach(group => {
-        if (scene.animationGroups.find(g => g.name === group.name)) { // If the animation group already exists, remove it || This is to prevent duplicate animation groups
-            scene.removeAnimationGroup(group);
+    try {
+        // AssetContainer options
+        const containerOptions: LoadAssetContainerOptions = {
+            pluginExtension: ".glb"
         }
-        scene.addAnimationGroup(group);
-    });
-    // console.log("Scene Animation Groups: ", scene.animationGroups);
-    
-    // Find the root mesh that contains all parts
-    playerMesh = modelContainer.meshes.find(mesh => mesh.name === rootMeshName);
-    if (!playerMesh) {
-        console.error("Error loading player mesh: ", modelUrl);
-        return { mesh: undefined, animations: {} };
-    } 
-    
-    // Set initial rotation to face forward
-    if (playerMesh) {
-        // Model is naturally upright but facing backward, so rotate 180° around Y to face forward
+        
+        // Load the player model and place it in an asset container
+        const modelContainer: AssetContainer = await LoadAssetContainerAsync(
+            modelUrl,
+            scene,
+            containerOptions
+        ).catch(async (error) => {
+            console.warn("Failed to load from Supabase, trying local file:", error);
+            modelUrl = `/models/${modelFile}`;
+            return await LoadAssetContainerAsync(modelUrl, scene, containerOptions);
+        });
+        
+        // console.log("Model loaded successfully");
+        
+        // Add all meshes and animations to the scene
+        modelContainer.meshes.forEach(mesh => {
+            // console.log("Adding mesh to scene:", mesh.name);
+            scene.addMesh(mesh);
+            mesh.scaling = new Vector3(1, 1, 1);
+        });
+        
+        // Add animations
+        // TODO: Try and reuse animation groups since models aren't likely to change
+        modelContainer.animationGroups.forEach(group => {
+            // console.log("Found animation group:", group.name);
+            if (scene.animationGroups.find(g => g.name === group.name)) {
+                scene.removeAnimationGroup(group);
+            }
+            scene.addAnimationGroup(group);
+        });
+        
+        // Find the root mesh
+        const rootMeshName = "__root__";
+        playerMesh = modelContainer.meshes.find(mesh => mesh.name === rootMeshName);
+        if (!playerMesh) {
+            console.error("Root mesh not found. Available meshes:", modelContainer.meshes.map(m => m.name));
+            return { mesh: undefined, animations: {} };
+        }
+        
+        // Set initial rotation
         playerMesh.rotation.y = Math.PI;
-        console.log("Set player mesh to face forward:", playerMesh.rotation);
+        console.log("Player mesh setup complete");
+        
+        const animations = {
+            jump: modelContainer.animationGroups.find(group => group.name === "jump"),
+            run: modelContainer.animationGroups.find(group => group.name === "run"),
+            idle: modelContainer.animationGroups.find(group => group.name === "idle")
+        };
+        
+        return { mesh: playerMesh, animations };
+    } catch (error) {
+        console.error("Error in loadPlayerMesh:", error);
+        throw error;
     }
-    
-    const animations = {
-        jump: modelContainer.animationGroups.find(group => group.name === "jump"),
-        run: modelContainer.animationGroups.find(group => group.name === "run"),
-        idle: modelContainer.animationGroups.find(group => group.name === "idle")
-    };
-    
-    return { mesh: playerMesh, animations };
 }
 
 // Returns an object with the mesh and transform node { mesh: AbstractMesh, transformNode: TransformNode, animations: {}}

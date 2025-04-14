@@ -1,6 +1,32 @@
-import { Vector3 } from "@babylonjs/core";
+import { Color3, Vector3 } from "@babylonjs/core";
+import { Room } from "colyseus.js";
 
-// Enum helps with type safety when referencing animations
+// Map State
+export interface IMapState {
+    data: number[];
+    width: number;
+    height: number;
+    fogColor: Color3;
+    fogDensity: number;
+}
+
+export class MapState implements IMapState {
+    data: number[];
+    width: number;
+    height: number;
+    fogColor: Color3;
+    fogDensity: number;
+
+    constructor() {
+        this.data = [];
+        this.width = 0;
+        this.height = 0;
+        this.fogColor = new Color3(0, 0, 0);
+        this.fogDensity = 0;
+    }
+}
+
+// Player State
 // TODO: Add falling animation, attacking animation(shove)
 export enum PlayerAnimation {
     IDLE = "idle",
@@ -18,8 +44,8 @@ export interface IPlayerState {
     sessionId: string;
 }
 
-// Implements keyword makes sure that the class implements all the properties of the interface
-// A State to keep track of the player individual properties
+
+// Keep track of the player individual properties
 export class PlayerState implements IPlayerState {
     position: Vector3;
     rotationY: number;
@@ -27,8 +53,9 @@ export class PlayerState implements IPlayerState {
     isSprinting: boolean;
     isJumping: boolean;
     currentAnimation: PlayerAnimation;
+    isHost: boolean;
     sessionId: string;
-
+    
     constructor(sessionId: string) {
         this.position = new Vector3(0, 0, 0);
         this.rotationY = 0;
@@ -36,31 +63,43 @@ export class PlayerState implements IPlayerState {
         this.isSprinting = false;
         this.isJumping = false;
         this.currentAnimation = PlayerAnimation.IDLE;
+        this.isHost = false;
         this.sessionId = sessionId;
     }
-
+    
     updatePosition(position: Vector3) {
         this.position.set(position.x, position.y, position.z);
     }
-
+    
     updateRotationY(rotationY: number) {
         this.rotationY = rotationY;
     }
-
+    
     setAnimationState(state: PlayerAnimation) {
         this.currentAnimation = state;
     }
+
+    setIsHost(isHost: boolean) {
+        this.isHost = isHost;
+    }
 }
+
+
 
 // A State to keep track of all the players in the room
 export class PlayerStateManager {
-    // private makes it so the variables can't be accessed outside the class
+    // Map of all the players in the room
     private players: Map<string, PlayerState>;
     private localPlayerId: string | null;
+    // Current map state
+    private mapState: MapState;
+    private isHost: boolean;
 
     constructor() {
         this.players = new Map();
         this.localPlayerId = null;
+        this.mapState = new MapState();
+        this.isHost = false;
     }
 
     // Create a new player state and add it to the map
@@ -91,4 +130,31 @@ export class PlayerStateManager {
     }
 
 
+    // Map State
+    async setMapState(mapState: MapState, room: Room) {
+        this.mapState = mapState;
+        try {
+            room.send("setMapState", this.mapState);
+            console.log("Set map state: ", this.mapState);
+        } catch (error) {
+            console.error("Error setting map state: ", error);
+            throw error;
+        }
+    }
+
+    getMapState(room: Room): MapState | null {
+        room.send("getMapState", this.mapState);
+        return this.mapState;
+    }
+
+    setIsHost(isHost: boolean) {
+        this.isHost = isHost;
+        if (isHost) {
+            this.mapState = new MapState();
+        } 
+    }
+
+    getIsHost(): boolean {
+        return this.isHost;
+    }
 }

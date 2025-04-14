@@ -1,7 +1,7 @@
 import { Scene, HemisphericLight } from "@babylonjs/core";
-import { MAP_CONFIG } from "../map/mapConfig";
+import { MAP_CONFIG } from "../mapConfig";
 
-export const setupLight = (scene: Scene): HemisphericLight => {
+const createLight = (scene: Scene): HemisphericLight => {
     try {
         const light = new HemisphericLight("light", MAP_CONFIG.LIGHT_CONFIG.position, scene);
         light.intensity = MAP_CONFIG.LIGHT_CONFIG.intensity;
@@ -13,3 +13,5 @@ export const setupLight = (scene: Scene): HemisphericLight => {
         throw error;
     }
 }
+
+export default createLight;
