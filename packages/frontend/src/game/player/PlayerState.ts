@@ -6,7 +6,7 @@ export interface IMapState {
     data: number[];
     width: number;
     height: number;
-    fogColor: Color3;
+    fogColor: number[];
     fogDensity: number;
 }
 
@@ -14,14 +14,14 @@ export class MapState implements IMapState {
     data: number[];
     width: number;
     height: number;
-    fogColor: Color3;
+    fogColor: number[];
     fogDensity: number;
 
     constructor() {
         this.data = [];
         this.width = 0;
         this.height = 0;
-        this.fogColor = new Color3(0, 0, 0);
+        this.fogColor = [0, 0, 0];
         this.fogDensity = 0;
     }
 }

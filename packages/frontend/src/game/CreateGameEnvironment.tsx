@@ -47,14 +47,14 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
 
                 // Setup the scene
                 const scene = await setupScene(engine);
-                loadMap(scene, playerStateManager, isHost, room);
-
+                
                 // Setup the player
                 const camera = createPlayerCamera(scene, canvas);
                 createPlayer(scene, camera, playerStateManager); // TODO: Probably consolidate this into the setupPlayerCamera function
                 
                 // Setup the multiplayer
                 setupMultiplayer(scene, camera, playerStateManager, room);
+                loadMap(scene, playerStateManager, isHost, room);
 
                 scene.executeWhenReady(() => {
                     engine.loadingScreen.hideLoadingUI();

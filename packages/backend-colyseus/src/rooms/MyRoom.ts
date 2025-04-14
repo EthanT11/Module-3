@@ -33,7 +33,7 @@ export class MyRoom extends Room<MyRoomState> {
       this.state.map.height = message.height;
       this.state.map.fogColor = message.fogColor;
       this.state.map.fogDensity = message.fogDensity;
-      console.log("Updated map: ", this.state.map);
+      console.log("Updated map: ", this.state.map.fogColor);
     });
 
     this.onMessage("getMapState", (client): void => {
@@ -45,6 +45,7 @@ export class MyRoom extends Room<MyRoomState> {
         fogColor: this.state.map.fogColor,
         fogDensity: this.state.map.fogDensity
       });
+      console.log("Sent map state to client: ", client.sessionId);
     });
 
     // Catch playground message types |
