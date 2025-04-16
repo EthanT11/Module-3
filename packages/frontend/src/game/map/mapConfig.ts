@@ -11,8 +11,8 @@ export const MAP_CONFIG = {
     },
 
     MAZE_CONFIG: {
-        width: 10,
-        height: 10,
+        width: 20,
+        height: 20,
     },
 
     LIGHT_CONFIG: {
@@ -23,8 +23,8 @@ export const MAP_CONFIG = {
     GROUND_CONFIG: {
         assetFolder: "lichen_rock",
         uvScale: 10,
-        height: 40,
-        width: 40,
+        height: 50,
+        width: 50,
         yOffset: 1.1,
     },  
 
