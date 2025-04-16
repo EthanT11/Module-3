@@ -59,7 +59,7 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
 
                 // Setup the game HUD
                 gameHUD = new GameHUD(scene);
-                // gameHUD.startTimer();
+                gameHUD.startTimer();
 
                 scene.executeWhenReady(() => {
                     engine.loadingScreen.hideLoadingUI();
