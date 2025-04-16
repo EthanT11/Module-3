@@ -5,10 +5,14 @@ import { AdvancedDynamicTexture, TextBlock, StackPanel, Control } from "@babylon
 // TODO: Try and display current users in the game
 
 export class GameHUD {
+    // Public
     gui: AdvancedDynamicTexture;
     isRunning: boolean;
+
+    // Private
     private timer: TextBlock;
     private startTime: number;
+    private congratsMessage: TextBlock;
 
     constructor(scene: Scene) {
         // Create the GUI
@@ -30,6 +34,16 @@ export class GameHUD {
         this.timer.text = "00:00";
         mainContainer.addControl(this.timer);
 
+        // Create congratulations message
+        this.congratsMessage = new TextBlock("congratsMessage");
+        this.congratsMessage.height = "100px";
+        this.congratsMessage.color = "gold";
+        this.congratsMessage.fontSize = "60px";
+        this.congratsMessage.text = "";
+        this.congratsMessage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.congratsMessage.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        this.gui.addControl(this.congratsMessage);
+
         // Init timer
         this.startTime = 0;
         this.isRunning = false;
@@ -50,6 +64,10 @@ export class GameHUD {
     stopTimer() {
         this.isRunning = false;
         return this.timer.text;
+    }
+
+    showCongratulations(finalTime: string) {
+        this.congratsMessage.text = `Congratulations!\nFinal Time: ${finalTime}`;
     }
 
     private updateTimer() {

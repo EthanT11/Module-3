@@ -127,6 +127,7 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
                                 console.log("Stopping timer...");
                                 const finalTime = gameHUD.stopTimer();
                                 console.log("Final time:", finalTime);
+                                gameHUD.showCongratulations(finalTime);
                             }
                         }
                     }
