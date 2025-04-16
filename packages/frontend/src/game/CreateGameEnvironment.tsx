@@ -8,6 +8,7 @@ import { SCENE_CONFIG } from "./config";
 import { createPlayer } from "./player/createPlayer";
 import { PlayerStateManager } from "./player/PlayerState";
 import loadMap from "./map/loadMap";
+import { GameHUD } from "./game_hud/GameHUD";
 
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
@@ -22,7 +23,7 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
 
     useEffect( () => {
         let engine: Engine;
-        
+        let gameHUD: GameHUD;
 
         const setupGame = async () => {
             const canvas = reactCanvas.current;
@@ -55,6 +56,10 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
                 // Setup the multiplayer
                 setupMultiplayer(scene, camera, playerStateManager, room);
                 loadMap(scene, playerStateManager, isHost, room);
+
+                // Setup the game HUD
+                gameHUD = new GameHUD(scene);
+                // gameHUD.startTimer();
 
                 scene.executeWhenReady(() => {
                     engine.loadingScreen.hideLoadingUI();

@@ -1,6 +1,6 @@
 import { Scene, Color3 } from "@babylonjs/core";
 import { Room } from "colyseus.js";
-import { createLight, createFog, createSkyBox, createGround } from "./mapObjects";
+import { createLight, createFog, createSkyBox, createGround } from "./map_objects";
 import { PlayerStateManager } from "../player/PlayerState";
 import generateMaze from "./utility/generateMaze";
 import fillMap from "./utility/fillMap";

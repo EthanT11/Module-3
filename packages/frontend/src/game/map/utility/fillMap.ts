@@ -1,6 +1,6 @@
 import { MeshBuilder, Vector2, StandardMaterial, Color3, Scene } from "@babylonjs/core";
 import { MAP_CONFIG } from "../mapConfig";
-import { createWall, createPlatform } from "../mapObjects/index";
+import { createWall, createPlatform } from "../map_objects/index";
 
 const fillMap = (map: number[][], scene: Scene) => {
     // Get the ground size
