@@ -10,7 +10,12 @@ let fog: { fogColor: number[], fogDensity: number };
 
 const loadLocalMap = async (scene: Scene, playerStateManager: PlayerStateManager, room: Room) => {
     // Host generates and sets the map
-    map = generateMaze();
+    const useTestMap = true;
+    if (useTestMap) {
+        map = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]];
+    } else {
+        map = generateMaze();
+    }
     fog = createFog(scene);
     createLight(scene);
     createSkyBox(scene);
