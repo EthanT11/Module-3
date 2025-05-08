@@ -1,5 +1,5 @@
-import { Scene } from "@babylonjs/core";
-import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Rectangle } from "@babylonjs/gui";
+import { Scene, PointerEventTypes } from "@babylonjs/core";
+import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Rectangle, Image } from "@babylonjs/gui";
 import { 
     createTextBlock, 
     createRectangle,
@@ -17,21 +17,42 @@ export class GameHUD {
     isRunning: boolean;
 
     // Private
+    // Timer
     private timer: TextBlock;
     private startTime: number;
     private congratsMessage: TextBlock;
+
+    // Player List
     private playerListContainer: Rectangle;
     private playerList: StackPanel;
     private playerListTitle: TextBlock;
     private players: Map<string, TextBlock>;
     private morePlayersText: TextBlock | null = null;
+
+    // HP Bar
     private hpBar: Rectangle;
     private hpText: TextBlock;
+
+    // FIST
+    private fistContainer: Rectangle;
+    private fistImage: Image | null = null;
+    private fistText: TextBlock | null = null;
+    private isActivated: boolean = false;
+    private activationTimer: number = 0;
 
     constructor(scene: Scene) {
         // Create the GUI
         this.gui = AdvancedDynamicTexture.CreateFullscreenUI("gameHUD");
         this.players = new Map();
+
+        // Create main container for the entire HUD
+        const mainHUDContainer = new Rectangle("mainHUDContainer");
+        mainHUDContainer.width = 1;
+        mainHUDContainer.height = 1;
+        mainHUDContainer.thickness = 0;
+        mainHUDContainer.background = "transparent";
+        mainHUDContainer.isPointerBlocker = false;
+        this.gui.addControl(mainHUDContainer);
 
         // Timer container
         const timerContainer = createContainer({
@@ -44,7 +65,7 @@ export class GameHUD {
             background: GUI_COLORS.background,
             alpha: 0.7
         });
-        this.gui.addControl(timerContainer);
+        mainHUDContainer.addControl(timerContainer);
 
         // Create timer
         this.timer = createTextBlock({
@@ -60,7 +81,7 @@ export class GameHUD {
         });
         timerContainer.addControl(this.timer);
 
-        // HP Bar container
+        // HP Bar container (top left)
         const hpBarContainer = createContainer({
             name: "hpBarContainer",
             width: GUI_DIMENSIONS.hpBarContainerWidth,
@@ -68,11 +89,11 @@ export class GameHUD {
             horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
             verticalAlignment: Control.VERTICAL_ALIGNMENT_TOP,
             top: GUI_DIMENSIONS.padding,
-            left: GUI_DIMENSIONS.padding,
+            left: GUI_DIMENSIONS.padding, // Left padding
             background: GUI_COLORS.background,
             alpha: 0.7
         });
-        this.gui.addControl(hpBarContainer);
+        mainHUDContainer.addControl(hpBarContainer);
 
         // HP Bar layout
         const hpBarLayout = createPanel("hpBarLayout", false);
@@ -132,7 +153,7 @@ export class GameHUD {
             height: (parseInt(GUI_DIMENSIONS.playerListTitleHeight.toString()) + 
                    (parseInt(GUI_DIMENSIONS.playerEntryHeight.toString()) * (GUI_DIMENSIONS.maxVisiblePlayers - 1))) + "px"
         });
-        this.gui.addControl(this.playerListContainer);
+        mainHUDContainer.addControl(this.playerListContainer);
 
         // Create a title container at the top || "Players"
         const titleContainer = createRectangle({
@@ -190,10 +211,44 @@ export class GameHUD {
         this.startTime = 0;
         this.isRunning = false;
 
+        // Create the FIST box in the bottom right corner
+        this.fistContainer = createContainer({
+            name: "fistContainer",
+            width: "120px",
+            height: "120px",
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_RIGHT,
+            verticalAlignment: Control.VERTICAL_ALIGNMENT_BOTTOM,
+            right: GUI_DIMENSIONS.padding,
+            bottom: GUI_DIMENSIONS.padding,
+            background: GUI_COLORS.background,
+            alpha: 0.7,
+            cornerRadius: GUI_DIMENSIONS.borderRadius
+        });
+        mainHUDContainer.addControl(this.fistContainer);
+
+        // Try to load the fist icon immediately
+        this.loadFistIcon("icons/fist.png");
+
+        // Listen for clicks in the scene to activate the fist
+        scene.onPointerObservable.add((pointerInfo) => {
+            if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                this.activateFist();
+            }
+        });
+
+        // Render before every frame 
         scene.onBeforeRenderObservable.add(() => {
             if (this.isRunning) {
                 // Update the timer
                 this.updateTimer();
+            }
+
+            // Handle fist activation timeout
+            if (this.isActivated) {
+                this.activationTimer++;
+                if (this.activationTimer > 10) { // ~10 frames of activation
+                    this.deactivateFist();
+                }
             }
         });
     }
@@ -272,7 +327,7 @@ export class GameHUD {
             this.playerList.addControl(playerEntries[i]);
         }
         
-        // If we have more players than we can show, add the "and X more" text
+        // If we have more players than we can show
         if (hasMore) {
             const moreCount = playerEntries.length - maxPlayerEntries;
             this.morePlayersText = createTextBlock({
@@ -298,5 +353,58 @@ export class GameHUD {
 
     dispose(): void {
         this.gui.dispose();
+    }
+
+    // Method to load the fist icon
+    private loadFistIcon(iconPath: string): void {
+        // Create a placeholder text until the image loads
+        this.fistText = createTextBlock({
+            name: "fistText",
+            text: "FIST",
+            color: GUI_COLORS.text,
+            fontSize: GUI_FONT_SIZES.title,
+            width: "100%",
+            height: "100%",
+            textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        });
+        this.fistContainer.addControl(this.fistText);
+
+        // Create and load the image
+        this.fistImage = new Image("fistIcon", iconPath);
+        this.fistImage.width = "80%";
+        this.fistImage.height = "80%";
+        this.fistImage.stretch = Image.STRETCH_UNIFORM;
+        this.fistImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.fistImage.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+
+        // When the image loads successfully, remove the text
+        this.fistImage.onImageLoadedObservable.add(() => {
+            try {
+                if (this.fistText && this.fistText.parent) {
+                    this.fistContainer.removeControl(this.fistText);
+                }
+                this.fistContainer.addControl(this.fistImage);
+                console.log(`Fist icon loaded successfully from: ${iconPath}`);
+            } catch (error) {
+                console.error("Error loading fist icon:", error);
+            }
+        });
+    }
+
+    // Activate the fist
+    activateFist(): void {
+        if (!this.isActivated) {
+            this.isActivated = true;
+            this.activationTimer = 0;
+            this.fistContainer.background = GUI_COLORS.accent; // Red background
+            console.log("Fist activated!");
+        }
+    }
+
+    // Deactivate the fist (return to normal)
+    deactivateFist(): void {
+        this.isActivated = false;
+        this.fistContainer.background = GUI_COLORS.background; // Normal background
     }
 }
