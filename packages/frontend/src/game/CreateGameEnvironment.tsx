@@ -74,7 +74,7 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
                 gameHUD = new GameHUD(scene);
                 
                 // Setup the multiplayer and map
-                setupMultiplayer(scene, camera, playerStateManager, room);
+                setupMultiplayer(scene, camera, playerStateManager, room, gameHUD);
                 loadMap(scene, playerStateManager, isHost, room);
 
                 // Add debug logging for goal creation

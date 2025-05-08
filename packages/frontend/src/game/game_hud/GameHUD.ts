@@ -103,14 +103,6 @@ export class GameHUD {
         playerListTitle.height = "30px";
         this.playerList.addControl(playerListTitle);
 
-        // Add a sample player (you can modify this later to show actual players)
-        const samplePlayer = new TextBlock("samplePlayer");
-        samplePlayer.text = "Player 1";
-        samplePlayer.color = "white";
-        samplePlayer.fontSize = "18px";
-        samplePlayer.height = "25px";
-        this.playerList.addControl(samplePlayer);
-
         // Create congratulations message
         this.congratsMessage = new TextBlock("congratsMessage");
         this.congratsMessage.height = "100px";
@@ -158,21 +150,28 @@ export class GameHUD {
         this.hpText.text = hp.toString();
     }
 
-    addPlayer(playerName: string) {
-        const playerText = new TextBlock(`player_${playerName}`);
-        playerText.text = playerName;
+    addPlayer(playerId: string, playerName?: string) {
+        if (this.players.has(playerId)) { // If the player already exists, don't add them again
+            return;
+        }
+
+        const displayText = playerName ? `${playerName} (${playerId})` : playerId;
+        const playerText = new TextBlock(`player_${playerId}`);
+        playerText.text = displayText;
         playerText.color = "white";
         playerText.fontSize = "18px";
         playerText.height = "25px";
         this.playerList.addControl(playerText);
-        this.players.set(playerName, playerText);
+        this.players.set(playerId, playerText);
     }
 
-    removePlayer(playerName: string) {
-        const playerControl = this.players.get(playerName);
+    removePlayer(playerId: string) {
+        const playerControl = this.players.get(playerId);
         if (playerControl) {
             this.playerList.removeControl(playerControl);
-            this.players.delete(playerName);
+            this.players.delete(playerId);
+        } else {
+            console.log(`Player ${playerId} not found`);
         }
     }
 
