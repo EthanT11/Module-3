@@ -11,12 +11,23 @@ let fog: { fogColor: number[], fogDensity: number };
 const loadLocalMap = async (scene: Scene, playerStateManager: PlayerStateManager, room: Room) => {
     // Host generates and sets the map
     const useTestMap = true;
+    const useFog = false;
     if (useTestMap) {
-        map = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]];
+        map = [
+            [0, 0, 0, 0, 0], 
+            [0, 3, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 4, 0], 
+            [0, 0, 0, 0, 0]
+        ];
     } else {
         map = generateMaze();
     }
-    fog = createFog(scene);
+    if (useFog) {
+        fog = createFog(scene);
+    } else {
+        fog = { fogColor: [0, 0, 0], fogDensity: 0 };
+    }
     createLight(scene);
     createSkyBox(scene);
     createGround(scene);
