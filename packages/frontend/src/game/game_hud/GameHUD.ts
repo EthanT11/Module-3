@@ -1,7 +1,15 @@
 import { Scene } from "@babylonjs/core";
-import { AdvancedDynamicTexture, TextBlock, StackPanel, Control, Rectangle } from "@babylonjs/gui";
-
-// TODO: Try and display current users in the game
+import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Rectangle } from "@babylonjs/gui";
+import { 
+    createTextBlock, 
+    createRectangle,
+    createContainer,
+    createPanel,
+    createPlayerEntry,
+    GUI_FONT_SIZES, 
+    GUI_COLORS, 
+    GUI_DIMENSIONS,
+} from "./guiUtils";
 
 export class GameHUD {
     // Public
@@ -12,108 +20,173 @@ export class GameHUD {
     private timer: TextBlock;
     private startTime: number;
     private congratsMessage: TextBlock;
+    private playerListContainer: Rectangle;
     private playerList: StackPanel;
+    private playerListTitle: TextBlock;
+    private players: Map<string, TextBlock>;
+    private morePlayersText: TextBlock | null = null;
     private hpBar: Rectangle;
     private hpText: TextBlock;
-    private players: Map<string, TextBlock>;
 
     constructor(scene: Scene) {
         // Create the GUI
         this.gui = AdvancedDynamicTexture.CreateFullscreenUI("gameHUD");
         this.players = new Map();
-        
-        // Create main container
-        const mainContainer = new StackPanel("mainContainer");
-        mainContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        mainContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-        mainContainer.top = "20px";
-        mainContainer.left = "-120px";
-        this.gui.addControl(mainContainer);
+
+        // Timer container
+        const timerContainer = createContainer({
+            name: "timerContainer",
+            width: GUI_DIMENSIONS.timerWidth,
+            height: GUI_DIMENSIONS.timerHeight,
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            verticalAlignment: Control.VERTICAL_ALIGNMENT_TOP,
+            top: GUI_DIMENSIONS.padding,
+            background: GUI_COLORS.background,
+            alpha: 0.7
+        });
+        this.gui.addControl(timerContainer);
 
         // Create timer
-        this.timer = new TextBlock("gameTimer");
-        this.timer.height = "50px";
-        this.timer.color = "white";
-        this.timer.fontSize = "50px";
-        this.timer.text = "00:00";
-        mainContainer.addControl(this.timer);
+        this.timer = createTextBlock({
+            name: "gameTimer",
+            width: "100%",
+            height: "100%",
+            color: GUI_COLORS.timerColor,
+            fontSize: GUI_FONT_SIZES.title,
+            text: "00:00",
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        });
+        timerContainer.addControl(this.timer);
 
-        // Create HP Bar (top left)
-        const hpBarContainer = new Rectangle("hpBarContainer");
-        hpBarContainer.width = "200px";
-        hpBarContainer.height = "40px";
-        hpBarContainer.thickness = 0;
-        hpBarContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        hpBarContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-        hpBarContainer.top = "20px";
-        hpBarContainer.left = "20px";
+        // HP Bar container
+        const hpBarContainer = createContainer({
+            name: "hpBarContainer",
+            width: GUI_DIMENSIONS.hpBarContainerWidth,
+            height: GUI_DIMENSIONS.elementHeight,
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_LEFT,
+            verticalAlignment: Control.VERTICAL_ALIGNMENT_TOP,
+            top: GUI_DIMENSIONS.padding,
+            left: GUI_DIMENSIONS.padding,
+            background: GUI_COLORS.background,
+            alpha: 0.7
+        });
         this.gui.addControl(hpBarContainer);
 
-        const hpBarStack = new StackPanel();
-        hpBarStack.isVertical = false;
-        hpBarStack.width = 1;
-        hpBarStack.height = 1;
-        hpBarContainer.addControl(hpBarStack);
+        // HP Bar layout
+        const hpBarLayout = createPanel("hpBarLayout", false);
+        hpBarLayout.width = 1; // Fill container
+        hpBarLayout.height = 1;
+        hpBarContainer.addControl(hpBarLayout);
 
-        const hpLabel = new TextBlock("hpLabel");
-        hpLabel.text = "HP ";
-        hpLabel.color = "white";
-        hpLabel.fontSize = "24px";
-        hpLabel.width = "40px";
-        hpLabel.height = "40px";
-        hpLabel.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        hpBarStack.addControl(hpLabel);
+        // HP Label
+        const hpLabel = createTextBlock({
+            name: "hpLabel",
+            width: GUI_DIMENSIONS.hpLabelWidth,
+            height: "100%",
+            color: GUI_COLORS.text,
+            fontSize: GUI_FONT_SIZES.subtitle,
+            text: "HP",
+            textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        });
+        hpBarLayout.addControl(hpLabel);
 
         // HP Bar background
-        this.hpBar = new Rectangle("hpBar");
-        this.hpBar.width = "120px";
-        this.hpBar.height = "30px";
-        this.hpBar.color = "white";
-        this.hpBar.thickness = 2;
-        this.hpBar.background = "#900";
-        this.hpBar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        this.hpBar.cornerRadius = 8;
-        hpBarStack.addControl(this.hpBar);
+        this.hpBar = createRectangle({
+            name: "hpBar",
+            width: GUI_DIMENSIONS.hpBarWidth,
+            height: GUI_DIMENSIONS.hpBarHeight,
+            color: GUI_COLORS.text,
+            thickness: 2,
+            background: GUI_COLORS.hpBar,
+            cornerRadius: GUI_DIMENSIONS.borderRadius
+        });
+        hpBarLayout.addControl(this.hpBar);
 
         // HP value overlay
-        this.hpText = new TextBlock("hpText");
-        this.hpText.text = "0";
-        this.hpText.color = "white";
-        this.hpText.fontSize = "22px";
-        this.hpText.width = "120px";
-        this.hpText.height = "30px";
-        this.hpText.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.hpText.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        this.hpText = createTextBlock({
+            name: "hpText",
+            width: "100%",
+            height: "100%",
+            color: GUI_COLORS.text,
+            fontSize: GUI_FONT_SIZES.regular,
+            text: "0",
+            textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        });
         this.hpBar.addControl(this.hpText);
 
-        // Create player list
-        this.playerList = new StackPanel("playerList");
-        this.playerList.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        this.playerList.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-        this.playerList.top = "20px";
-        this.playerList.left = "20px";
-        this.playerList.width = "200px";
-        this.gui.addControl(this.playerList);
+        // Player list container (top right)
+        this.playerListContainer = createContainer({
+            name: "playerListContainer",
+            width: GUI_DIMENSIONS.playerListWidth,
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_RIGHT,
+            verticalAlignment: Control.VERTICAL_ALIGNMENT_TOP,
+            top: GUI_DIMENSIONS.padding,
+            right: GUI_DIMENSIONS.padding,
+            background: GUI_COLORS.playerListBackground,
+            alpha: 0.7,
+            // Fixed height based on player counts
+            height: (parseInt(GUI_DIMENSIONS.playerListTitleHeight.toString()) + 
+                   (parseInt(GUI_DIMENSIONS.playerEntryHeight.toString()) * (GUI_DIMENSIONS.maxVisiblePlayers - 1))) + "px"
+        });
+        this.gui.addControl(this.playerListContainer);
 
-        // Add a title for the player list
-        const playerListTitle = new TextBlock("playerListTitle");
-        playerListTitle.text = "Players";
-        playerListTitle.color = "white";
-        playerListTitle.fontSize = "24px";
-        playerListTitle.height = "30px";
-        this.playerList.addControl(playerListTitle);
+        // Create a title container at the top || "Players"
+        const titleContainer = createRectangle({
+            name: "titleContainer",
+            width: "100%",
+            height: GUI_DIMENSIONS.playerListTitleHeight,
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            verticalAlignment: Control.VERTICAL_ALIGNMENT_TOP,
+            thickness: 0,
+            background: GUI_COLORS.background, // Slightly darker background for the header
+            // alpha: 0.7
+        });
+        this.playerListContainer.addControl(titleContainer);
 
-        // Create congratulations message
-        this.congratsMessage = new TextBlock("congratsMessage");
-        this.congratsMessage.height = "100px";
-        this.congratsMessage.color = "gold";
-        this.congratsMessage.fontSize = "60px";
-        this.congratsMessage.text = "";
-        this.congratsMessage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.congratsMessage.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        // Player list title - inside the title container
+        this.playerListTitle = createTextBlock({
+            name: "playerListTitle",
+            text: "Players",
+            color: GUI_COLORS.text,
+            fontSize: GUI_FONT_SIZES.subtitle,
+            height: GUI_DIMENSIONS.playerListTitleHeight,
+            width: "100%",
+            textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        });
+        titleContainer.addControl(this.playerListTitle);
+
+        // Player list internal panel - starts below the title
+        this.playerList = createPanel("playerListPanel", true);
+        this.playerList.width = 1;
+        this.playerList.paddingTop = GUI_DIMENSIONS.playerEntryPadding;
+        this.playerList.paddingBottom = GUI_DIMENSIONS.playerEntryPadding;
+        this.playerList.paddingLeft = GUI_DIMENSIONS.playerListPadding;
+        this.playerList.paddingRight = GUI_DIMENSIONS.playerListPadding;
+        this.playerList.top = GUI_DIMENSIONS.playerListTitleHeight; // Position below the title
+        this.playerList.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP; // Align to top
+        this.playerListContainer.addControl(this.playerList);
+
+        // Congratulations message
+        this.congratsMessage = createTextBlock({
+            name: "congratsMessage",
+            height: GUI_DIMENSIONS.congratsHeight,
+            width: GUI_DIMENSIONS.congratsWidth,
+            color: GUI_COLORS.highlight,
+            fontSize: GUI_FONT_SIZES.title,
+            text: "",
+            horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            verticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER,
+            textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+            textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
+        });
         this.gui.addControl(this.congratsMessage);
 
-        // Init timer
+        // Timer state
         this.startTime = 0;
         this.isRunning = false;
 
@@ -125,57 +198,105 @@ export class GameHUD {
         });
     }
 
-    startTimer() {
+    // Public functions
+    startTimer(): void {
         this.startTime = Date.now();
         this.isRunning = true;
     }
 
-    stopTimer() {
+    stopTimer(): string {
         this.isRunning = false;
         return this.timer.text;
     }
 
-    showCongratulations(finalTime: string) {
+    showCongratulations(finalTime: string): void {
         this.congratsMessage.text = `Congratulations!\nFinal Time: ${finalTime}`;
     }
 
-    private updateTimer() {
+    updateHP(hp: number): void {
+        this.hpText.text = hp.toString();
+    }
+
+    addPlayer(playerId: string, playerName?: string): void {
+        if (this.players.has(playerId)) return;
+        
+        // Limit player ID length to prevent overflow
+        const shortId = playerId.length > 8 ? playerId.substring(0, 8) + '...' : playerId;
+        const displayText = playerName ? `${playerName} (${shortId})` : shortId;
+        
+        // Create player entry but don't add it yet
+        const playerText = createPlayerEntry(playerId, displayText);
+        this.players.set(playerId, playerText);
+        
+        // Update the player list display
+        this.updatePlayerListDisplay();
+    }
+
+    removePlayer(playerId: string): void {
+        const playerControl = this.players.get(playerId);
+        if (playerControl) {
+            // Remove from list if it's currently displayed
+            if (playerControl.parent) {
+                this.playerList.removeControl(playerControl);
+            }
+            this.players.delete(playerId);
+            
+            // Update the player list display
+            this.updatePlayerListDisplay();
+        } else {
+            console.log(`Player ${playerId} not found`);
+        }
+    }
+
+    private updatePlayerListDisplay(): void {
+        // Clear existing player entries
+        const children = this.playerList.children;
+        while (children.length > 0) {
+            this.playerList.removeControl(children[0]);
+        }
+        
+        if (this.morePlayersText) {
+            this.morePlayersText = null;
+        }
+        
+        // Get all player entries
+        const playerEntries = Array.from(this.players.values());
+        
+        // Calculate how many we can show
+        const maxPlayerEntries = GUI_DIMENSIONS.maxVisiblePlayers - 1; // Subtract 1 for the title
+        const displayCount = Math.min(maxPlayerEntries, playerEntries.length);
+        const hasMore = playerEntries.length > maxPlayerEntries;
+        
+        // Add the players we can show
+        for (let i = 0; i < displayCount; i++) {
+            this.playerList.addControl(playerEntries[i]);
+        }
+        
+        // If we have more players than we can show, add the "and X more" text
+        if (hasMore) {
+            const moreCount = playerEntries.length - maxPlayerEntries;
+            this.morePlayersText = createTextBlock({
+                name: "morePlayersText",
+                text: `...and ${moreCount} more`,
+                color: GUI_COLORS.text,
+                fontSize: GUI_FONT_SIZES.small,
+                height: GUI_DIMENSIONS.playerEntryHeight,
+                textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
+                fontWeight: "italic"
+            });
+            this.playerList.addControl(this.morePlayersText);
+        }
+    }
+
+    // Private functions and cleanup
+    private updateTimer(): void {
         const elapsedTime = Date.now() - this.startTime;
         const minutes = Math.floor(elapsedTime / 60000);
         const seconds = Math.floor((elapsedTime % 60000) / 1000);
         this.timer.text = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    updateHP(hp: number) {
-        this.hpText.text = hp.toString();
-    }
-
-    addPlayer(playerId: string, playerName?: string) {
-        if (this.players.has(playerId)) { // If the player already exists, don't add them again
-            return;
-        }
-
-        const displayText = playerName ? `${playerName} (${playerId})` : playerId;
-        const playerText = new TextBlock(`player_${playerId}`);
-        playerText.text = displayText;
-        playerText.color = "white";
-        playerText.fontSize = "18px";
-        playerText.height = "25px";
-        this.playerList.addControl(playerText);
-        this.players.set(playerId, playerText);
-    }
-
-    removePlayer(playerId: string) {
-        const playerControl = this.players.get(playerId);
-        if (playerControl) {
-            this.playerList.removeControl(playerControl);
-            this.players.delete(playerId);
-        } else {
-            console.log(`Player ${playerId} not found`);
-        }
-    }
-
-    dispose() {
+    dispose(): void {
         this.gui.dispose();
     }
 }
