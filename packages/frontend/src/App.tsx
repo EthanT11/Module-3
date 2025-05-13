@@ -1,10 +1,10 @@
 import "./App.css";
-import StartScreen from "./components/pages/StartScreen";
+import BabylonStartScreen from "./components/pages/StartScreen";
 
 export default () => {
   return (
     <div>
-      <StartScreen />
+      <BabylonStartScreen />
     </div>
   )
 };

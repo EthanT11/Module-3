@@ -1,30 +1,44 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createBabylonStartScreen } from "../createStartScreen";
 import RoomScreen from "./RoomScreen";
 
-// START SCREEN
-// TODO: Create separate component
-// TODO: Check if there is a better way to show different screens/pages
-// TODO: Cool art or maybe a spinning scene if possible and not too laggy
-// TODO: Style
+const BabylonStartScreen = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [showRooms, setShowRooms] = useState(false);
 
-const StartScreen = () => {
-    const [showRooms, setShowRooms] = useState(false);
-  
-    if (showRooms) {
-      return <RoomScreen />
+  // This creates a ref to store babylon engine's dispose method
+  // When the component unmounts
+  const engineRef = useRef<{ dispose: () => void } | null>(null); 
+
+  useEffect(() => {
+    if (!showRooms && canvasRef.current) {
+      // Get the dispose method from the babylon start screen and pass in the canvas and onStart function
+      const { dispose } = createBabylonStartScreen(canvasRef.current, {
+        onStart: () => setShowRooms(true)
+      });
+      // Store the dispose method in the ref
+      engineRef.current = { dispose };
+
+      // Cleanup when component unmounts
+      return () => {
+        if (engineRef.current) {
+          engineRef.current.dispose();
+        }
+      };
     }
-  
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-teal-900">
-        <h1 className="text-4xl font-bold text-center text-black">Start Screen</h1>
-        <button 
-          className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 mt-4"
-          onClick={() => setShowRooms(true)}
-        >
-          Start
-        </button>
-      </div>
-    )
-  };
+  }, [showRooms]);
 
-export default StartScreen;
+  // If a room exists, show the room screen
+  // TODO: Create LobbyScreen and replace roomscreen
+  if (showRooms) {
+    return <RoomScreen />;
+  }
+
+  return (
+    <div className="h-screen w-screen">
+      <canvas ref={canvasRef} className="w-full h-full" />
+    </div>
+  );
+};
+
+export default BabylonStartScreen; 
