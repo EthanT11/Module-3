@@ -1,5 +1,5 @@
 import "./App.css";
-import BabylonStartScreen from "./components/pages/StartScreen";
+import BabylonStartScreen from "./game/menu/start_screen/StartScreen";
 
 export default () => {
   return (

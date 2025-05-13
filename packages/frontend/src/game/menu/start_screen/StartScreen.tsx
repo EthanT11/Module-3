@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { createBabylonStartScreen } from "../createStartScreen";
-import RoomScreen from "./RoomScreen";
+import { createBabylonStartScreen } from "./createStartScreen";
+import RoomScreen from "../../../components/pages/RoomScreen";
 
 const BabylonStartScreen = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
