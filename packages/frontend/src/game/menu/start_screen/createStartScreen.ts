@@ -1,5 +1,5 @@
 import { Engine, Scene, Vector3, Color4, ArcRotateCamera, Color3 } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button, InputText, TextBlock, Rectangle, StackPanel } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Button, InputText, TextBlock, Rectangle, StackPanel, Control } from "@babylonjs/gui";
 import fillMap from "../../map/utility/fillMap";
 import { createLight, createSkyBox, createGround, createFog } from "../../map/map_objects";
 import { startScreenMap } from "../../map/utility/startScreenMaps";
@@ -45,17 +45,26 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
 
   const startScreenUI = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, startScreenScene);
   
+  // Title StackPanel
+  const titleStack = new StackPanel();
+  titleStack.width = 1;
+  titleStack.height = "20%";
+  titleStack.isVertical = true;
+  titleStack.spacing = 15;
+  titleStack.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+  startScreenUI.addControl(titleStack);
+
   const titleText = new TextBlock();
+  titleText.width = 1;
   titleText.text = "PUNCH MAZE";
   titleText.color = "white";
-  titleText.fontSize = 50;
-  // titleText.top = "-150px";
-  titleText.top = "-25%";
+  titleText.fontSize = 82;
+  // Text Shadow
   titleText.shadowColor = "yellow";
   titleText.shadowBlur = 10;
   titleText.shadowOffsetX = 2;
   titleText.shadowOffsetY = 2;
-  startScreenUI.addControl(titleText);
+  titleStack.addControl(titleText);
 
   // Menu Container
   const menuContainer = new Rectangle();
@@ -63,6 +72,10 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
   menuContainer.height = "450px";
   menuContainer.background = "rgba(0, 0, 0, 0.3)";
   menuContainer.cornerRadius = 10;
+  menuContainer.thickness = 2;
+  menuContainer.color = "white";
+  menuContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER; 
+  menuContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
   menuContainer.top = "5%";
   startScreenUI.addControl(menuContainer);
 
@@ -100,7 +113,8 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
   nameCheckText.color = "white";
   nameCheckText.fontSize = 15;
   nameCheckText.width = 1;
-  nameCheckText.height = 0.3;
+  nameCheckText.height = 0.2;
+  nameCheckText.alpha = 0.2;
   nameCheckText.textWrapping = true;
   nameCheckText.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
   topStack.addControl(nameCheckText);
@@ -153,6 +167,7 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
   selfPlug.color = "white";
   selfPlug.fontSize = 15;
   selfPlug.height = "40px";
+  selfPlug.alpha = 0.2;
   selfPlug.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
   bottomStack.addControl(selfPlug);
 
@@ -166,7 +181,7 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
     const textCheck = handleInputText(nameInput);
     nameInput.background = textCheck ? "green" : "red";
     if (textCheck) {
-      // props.onStart();
+      props.onStart();
     }
   });
 
