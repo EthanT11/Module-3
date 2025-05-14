@@ -1,10 +1,10 @@
 import "./App.css";
-import BabylonStartScreen from "./game/menu/start_screen/StartScreen";
+import MainMenuScreen from "./game/menu/MainMenuScreen";
 
 export default () => {
   return (
     <div>
-      <BabylonStartScreen />
+      <MainMenuScreen />
     </div>
   )
 };
