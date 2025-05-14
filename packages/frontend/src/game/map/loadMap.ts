@@ -3,19 +3,35 @@ import { Room } from "colyseus.js";
 import { createLight, createFog, createSkyBox, createGround } from "./map_objects";
 import { PlayerStateManager } from "../player/PlayerState";
 import generateMaze from "./utility/generateMaze";
-import fillMaze from "./utility/fillMaze";
+import fillMap from "./utility/fillMap";
 
 let map: number[][] = [];
 let fog: { fogColor: number[], fogDensity: number };
 
 const loadLocalMap = async (scene: Scene, playerStateManager: PlayerStateManager, room: Room) => {
     // Host generates and sets the map
-    map = generateMaze();
-    fog = createFog(scene);
+    const useTestMap = true;
+    const useFog = false;
+    if (useTestMap) {
+        map = [
+            [0, 0, 0, 0, 0], 
+            [0, 3, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 4, 0], 
+            [0, 0, 0, 0, 0]
+        ];
+    } else {
+        map = generateMaze();
+    }
+    if (useFog) {
+        fog = createFog(scene);
+    } else {
+        fog = { fogColor: [0, 0, 0], fogDensity: 0 };
+    }
     createLight(scene);
     createSkyBox(scene);
     createGround(scene);
-    fillMaze(map, scene);
+    fillMap(map, scene);
     
     // We need to flatten the map to send it to the server
     const flatMap = map.flat();
@@ -58,7 +74,7 @@ const loadRemoteMap = async (scene: Scene, playerStateManager: PlayerStateManage
             createLight(scene);
             createSkyBox(scene);
             createGround(scene);
-            fillMaze(map, scene);
+            fillMap(map, scene);
             
             // resolve the promise with the map
             resolve(map);

@@ -140,6 +140,7 @@ export const setupMultiplayer = (
     camera: UniversalCamera,
     playerStateManager: PlayerStateManager,
     existingRoom?: Room,
+    gameHUD?: any
 ) => {
     if (!existingRoom) return;
 
@@ -152,6 +153,13 @@ export const setupMultiplayer = (
     roomState = room.state;
     console.log("Setting up multiplayer with room: ", room)
     
+    // Add all current players to the HUD
+    if (gameHUD) {
+        roomState.players.forEach((player, sessionId) => {
+            gameHUD.addPlayer(sessionId);
+        });
+    }
+
     roomState.players.onAdd(async (player, sessionId) => {
         // Check if the player is the local player
         const isLocalPlayer = sessionId === room.sessionId;
@@ -160,6 +168,10 @@ export const setupMultiplayer = (
         playerStateManager.addPlayer(sessionId);
         if (isLocalPlayer) {
             playerStateManager.setLocalPlayer(sessionId);
+        }
+
+        if (gameHUD) {
+            gameHUD.addPlayer(sessionId);
         }
 
         const playerTransformNode = await initializePlayerMesh({ 
@@ -215,6 +227,9 @@ export const setupMultiplayer = (
             removedPlayerMesh.dispose();
             playerMeshes.delete(sessionId);
             playerStateManager.removePlayer(sessionId);
+        }
+        if (gameHUD) {
+            gameHUD.removePlayer(sessionId);
         }
     })
 

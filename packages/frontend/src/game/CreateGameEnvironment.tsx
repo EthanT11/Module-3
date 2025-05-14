@@ -74,7 +74,7 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
                 gameHUD = new GameHUD(scene);
                 
                 // Setup the multiplayer and map
-                setupMultiplayer(scene, camera, playerStateManager, room);
+                setupMultiplayer(scene, camera, playerStateManager, room, gameHUD);
                 loadMap(scene, playerStateManager, isHost, room);
 
                 // Add debug logging for goal creation
@@ -107,11 +107,11 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
 
                         // NOTE: Remove me | For debugging
                         if (scene.getFrameId() % 60 === 0) { // Log every 60 frames
-                            console.log("=== Position Check ===");
-                            console.log("Goal position:", goal.position);
-                            console.log("Debug sphere position:", debugSphere?.position);
-                            console.log("Distance to goal:", distance);
-                            console.log("Camera position:", camera.position);
+                            // console.log("=== Position Check ===");
+                            // console.log("Goal position:", goal.position);
+                            // console.log("Debug sphere position:", debugSphere?.position);
+                            // console.log("Distance to goal:", distance);
+                            // console.log("Camera position:", camera.position);
                             
                             // Check if positions are within expected bounds
                             if (Math.abs(goal.position.x) > 20 || Math.abs(goal.position.z) > 20) {

@@ -14,7 +14,7 @@ const createFog = (scene: Scene, fogColor?: number[], fogDensity?: number): Fog 
     } else {
         // Generate random fog color and density for local player
         scene.fogColor = new Color3(Math.random(), Math.random(), Math.random());
-        scene.fogDensity = (Math.random() * 0.05) + 0.01; // 0.1 is very thick
+        scene.fogDensity = (Math.random() * 0.02) + 0.005; // Reduced range for less dense fog
     }
     return { fogColor: [scene.fogColor.r, scene.fogColor.g, scene.fogColor.b], fogDensity: scene.fogDensity };
 }

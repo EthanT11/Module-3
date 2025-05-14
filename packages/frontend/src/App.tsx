@@ -1,10 +1,10 @@
 import "./App.css";
-import StartScreen from "./components/pages/StartScreen";
+import MainMenuScreen from "./game/menu/MainMenuScreen";
 
 export default () => {
   return (
     <div>
-      <StartScreen />
+      <MainMenuScreen />
     </div>
   )
 };

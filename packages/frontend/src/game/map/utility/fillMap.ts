@@ -3,7 +3,7 @@ import { MAP_CONFIG } from "../mapConfig";
 import { createWall, createPlatform } from "../map_objects/index";
 import { SCENE_CONFIG } from "../../config";
 
-const fillMaze = (map: number[][], scene: Scene) => {
+const fillMap = (map: number[][], scene: Scene) => {
     // Get the ground size
     const groundWidth = MAP_CONFIG.GROUND_CONFIG.width;
     const groundHeight = MAP_CONFIG.GROUND_CONFIG.height;
@@ -73,4 +73,4 @@ const fillMaze = (map: number[][], scene: Scene) => {
     }
 }
 
-export default fillMaze;
+export default fillMap;

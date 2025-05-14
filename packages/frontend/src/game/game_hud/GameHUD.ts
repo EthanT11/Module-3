@@ -1,84 +1,78 @@
 import { Scene } from "@babylonjs/core";
-import { AdvancedDynamicTexture, TextBlock, StackPanel, Control } from "@babylonjs/gui";
-
-// TODO: create config file for the HUD
-// TODO: Try and display current users in the game
+import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
+import { 
+    HpBarComponent, 
+    PlayerListComponent, 
+    TimerComponent, 
+    FistComponent 
+} from "./components";
 
 export class GameHUD {
-    // Public
+    // Public properties
     gui: AdvancedDynamicTexture;
     isRunning: boolean;
-
-    // Private
-    private timer: TextBlock;
-    private startTime: number;
-    private congratsMessage: TextBlock;
+    
+    // Components
+    private mainContainer: Rectangle;
+    private timerComponent: TimerComponent;
+    private playerListComponent: PlayerListComponent;
+    private hpBarComponent: HpBarComponent;
+    private fistComponent: FistComponent;
 
     constructor(scene: Scene) {
         // Create the GUI
         this.gui = AdvancedDynamicTexture.CreateFullscreenUI("gameHUD");
         
-        // Create main container for all HUD elements
-        const mainContainer = new StackPanel("mainContainer");
-        mainContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        mainContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-        mainContainer.top = "20px";
-        mainContainer.left = "-120px";
-        this.gui.addControl(mainContainer);
-
-        // Create timer
-        this.timer = new TextBlock("gameTimer");
-        this.timer.height = "50px";
-        this.timer.color = "white";
-        this.timer.fontSize = "50px";
-        this.timer.text = "00:00";
-        mainContainer.addControl(this.timer);
-
-        // Create congratulations message
-        this.congratsMessage = new TextBlock("congratsMessage");
-        this.congratsMessage.height = "100px";
-        this.congratsMessage.color = "gold";
-        this.congratsMessage.fontSize = "60px";
-        this.congratsMessage.text = "";
-        this.congratsMessage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.congratsMessage.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-        this.gui.addControl(this.congratsMessage);
-
-        // Init timer
-        this.startTime = 0;
+        // Create main container for the entire HUD
+        this.mainContainer = new Rectangle("mainHUDContainer");
+        this.mainContainer.width = 1;
+        this.mainContainer.height = 1;
+        this.mainContainer.thickness = 0;
+        this.mainContainer.background = "transparent";
+        this.mainContainer.isPointerBlocker = false;
+        this.gui.addControl(this.mainContainer);
+        
+        // Initialize components
+        this.timerComponent = new TimerComponent(this.mainContainer, scene);
+        this.hpBarComponent = new HpBarComponent(this.mainContainer);
+        this.playerListComponent = new PlayerListComponent(this.mainContainer);
+        this.fistComponent = new FistComponent(this.mainContainer, scene);
+        
+        // Set up initial state
         this.isRunning = false;
-
-        scene.onBeforeRenderObservable.add(() => {
-            if (this.isRunning) {
-                // Update the timer
-                this.updateTimer();
-            }
-        });
     }
 
-    startTimer() {
-        this.startTime = Date.now();
+    // Timer functions
+    startTimer(): void {
+        this.timerComponent.startTimer();
         this.isRunning = true;
     }
 
-    stopTimer() {
+    stopTimer(): string {
         this.isRunning = false;
-        return this.timer.text;
+        return this.timerComponent.stopTimer();
     }
 
-    showCongratulations(finalTime: string) {
-        this.congratsMessage.text = `Congratulations!\nFinal Time: ${finalTime}`;
+    showCongratulations(finalTime: string): void {
+        this.timerComponent.showCongratulations(finalTime);
     }
 
-    private updateTimer() {
-        const elapsedTime = Date.now() - this.startTime;
-        const minutes = Math.floor(elapsedTime / 60000);
-        const seconds = Math.floor((elapsedTime % 60000) / 1000);
-        this.timer.text = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    // HP functions
+    updateHP(hp: number): void {
+        this.hpBarComponent.updateHP(hp);
     }
-    
 
-    dispose() {
+    // Player list functions
+    addPlayer(playerId: string, playerName?: string): void {
+        this.playerListComponent.addPlayer(playerId, playerName);
+    }
+
+    removePlayer(playerId: string): void {
+        this.playerListComponent.removePlayer(playerId);
+    }
+
+    // Cleanup
+    dispose(): void {
         this.gui.dispose();
     }
 }
