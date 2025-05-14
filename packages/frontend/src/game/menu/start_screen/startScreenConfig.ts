@@ -1,15 +1,33 @@
 import { Vector3 } from "@babylonjs/core";
 
-export const startScreenFontSizes = {
-    LARGE: 82,
-    MEDIUM: 20,
-    SMALL: 15,
-}
+export const startScreenConstants = {
+    ALPHA: 0.2,
+    CORNER_RADIUS: 10,
+    SHADOW_BLUR: 10,
+    SHADOW_OFFSET_X: 2,
+    SHADOW_OFFSET_Y: 2,
 
-export const startScreenColors = {
-    TEXT: "white",
-    HIGHLIGHT: "yellow",
-    BUTTON_BACKGROUND: "green",
+    COLOR: {
+        TEXT: "yellow",
+        BORDER: "orange",
+        SHADOW: "orange",
+        BUTTON_BACKGROUND: "rgba(0, 0, 0, 0.2)",
+        INPUT_BACKGROUND: "rgba(0, 0, 0, 0.2)",
+        MENU_CONTAINER_BACKGROUND: "rgba(0, 0, 0, 0.2)",
+    },
+    FONT_SIZE: {
+        TITLE: 82,
+        LARGE: 32,
+        MEDIUM: 20,
+        SMALL: 15,
+    },
+    TEXT: {
+        TITLE: "PUNCH MAZE",
+        INPUT_HEADER: "Contestant Name",
+        INPUT_PLACEHOLDER: "Choose your name",
+        CHECK_TEXT: "Name must be at least 3 characters long and less than 10 characters",
+        SELF_PLUG: "Made with ❤️ by Ethan Tracey \n GetBuilding 2025",
+    }
 }
 
 export const startScreenConfig = {
@@ -34,46 +52,79 @@ export const startScreenConfig = {
     },
     UI_CONFIG: {
         // Top StackPanel
-        // Title
-        TITLE_TEXT: "PUNCH MAZE",
-        TITLE_FONT_SIZE: startScreenFontSizes.LARGE,
-        TITLE_COLOR: startScreenColors.TEXT,
-        TITLE_SHADOW_COLOR: startScreenColors.HIGHLIGHT,
-        TITLE_SHADOW_OFFSET_X: 2,
-        TITLE_SHADOW_OFFSET_Y: 2,
-        TITLE_SHADOW_BLUR: 10,
+        TITLE: {
+            COLOR: startScreenConstants.COLOR.TEXT,
+            FONT_SIZE: startScreenConstants.FONT_SIZE.TITLE,
+            TEXT: startScreenConstants.TEXT.TITLE,
+            SHADOW_BLUR: startScreenConstants.SHADOW_BLUR,
+            SHADOW_COLOR: startScreenConstants.COLOR.SHADOW,
+            SHADOW_OFFSET_X: startScreenConstants.SHADOW_OFFSET_X,
+            SHADOW_OFFSET_Y: startScreenConstants.SHADOW_OFFSET_Y,
+        },
 
-        // Input Header
-        INPUT_HEADER_TEXT: "Contestant Name",
-        INPUT_HEADER_FONT_SIZE: startScreenFontSizes.MEDIUM,
-        INPUT_HEADER_COLOR: startScreenColors.TEXT,
+        INPUT_HEADER: { 
+            COLOR: startScreenConstants.COLOR.TEXT,
+            FONT_SIZE: startScreenConstants.FONT_SIZE.LARGE,
+            TEXT: startScreenConstants.TEXT.INPUT_HEADER,
+            SHADOW_COLOR: startScreenConstants.COLOR.SHADOW,
+            SHADOW_BLUR: startScreenConstants.SHADOW_BLUR,
+            SHADOW_OFFSET_X: startScreenConstants.SHADOW_OFFSET_X,
+            SHADOW_OFFSET_Y: startScreenConstants.SHADOW_OFFSET_Y,
+        },
 
-        // Input
-        INPUT_COLOR: startScreenColors.TEXT,
-        INPUT_FONT_SIZE: startScreenFontSizes.MEDIUM,
+        INPUT: {
+            BACKGROUND: startScreenConstants.COLOR.INPUT_BACKGROUND,
+            FOCUSED_BACKGROUND: startScreenConstants.COLOR.INPUT_BACKGROUND,
+            COLOR: startScreenConstants.COLOR.BORDER,
+            FONT_SIZE: startScreenConstants.FONT_SIZE.MEDIUM,
+            PLACEHOLDER_TEXT: startScreenConstants.TEXT.INPUT_PLACEHOLDER,
+            PLACEHOLDER_COLOR: startScreenConstants.COLOR.TEXT,
+            HIGHLIGHT_COLOR: startScreenConstants.COLOR.BORDER,
+            TEXT_HIGHLIGHT_COLOR: startScreenConstants.COLOR.TEXT,
+            SHADOW_COLOR: startScreenConstants.COLOR.SHADOW,
+            SHADOW_BLUR: startScreenConstants.SHADOW_BLUR,
+            SHADOW_OFFSET_X: startScreenConstants.SHADOW_OFFSET_X,
+            SHADOW_OFFSET_Y: startScreenConstants.SHADOW_OFFSET_Y,
+        },
 
-        // Name Check Text
-        CHECK_TEXT: "Name must be at least 3 characters long and less than 10 characters",
-        CHECK_TEXT_COLOR: startScreenColors.TEXT,
-        CHECK_TEXT_FONT_SIZE: startScreenFontSizes.SMALL,
-        CHECK_TEXT_ALPHA: 0.2,
+        CHECK_TEXT: {
+            ALPHA: startScreenConstants.ALPHA,
+            COLOR: startScreenConstants.COLOR.TEXT,
+            FONT_SIZE: startScreenConstants.FONT_SIZE.SMALL,
+            TEXT: startScreenConstants.TEXT.CHECK_TEXT,
+        },
 
-        // Divider
-        DIVIDER_WIDTH: 0.2, // Ask joel his opinion on divider width
-        DIVIDER_COLOR: startScreenColors.TEXT,
-        DIVIDER_CORNER_RADIUS: 10,
+        DIVIDER: {
+            COLOR: startScreenConstants.COLOR.BORDER,
+            WIDTH: 0.2,
+            HEIGHT: "2px",
+            CORNER_RADIUS: startScreenConstants.CORNER_RADIUS,
+        },
 
         // Bottom StackPanel
-        // Buttons
-        BUTTON_HEIGHT: "50px",
-        BUTTON_COLOR: startScreenColors.TEXT,  
-        BUTTON_BACKGROUND: startScreenColors.BUTTON_BACKGROUND,
-        BUTTON_CORNER_RADIUS: 10,
+        MENU_CONTAINER: {
+            BACKGROUND: startScreenConstants.COLOR.MENU_CONTAINER_BACKGROUND,
+            BORDER_THICKNESS: 4,
+            COLOR: startScreenConstants.COLOR.BORDER,
+            CORNER_RADIUS: startScreenConstants.CORNER_RADIUS,
+            SHADOW_BLUR: startScreenConstants.SHADOW_BLUR,
+            SHADOW_COLOR: startScreenConstants.COLOR.SHADOW,
+            SHADOW_OFFSET_X: startScreenConstants.SHADOW_OFFSET_X,
+            SHADOW_OFFSET_Y: startScreenConstants.SHADOW_OFFSET_Y,
+        },
+        BUTTON: {
+            HEIGHT: "50px",
+            COLOR: startScreenConstants.COLOR.BORDER,  
+            TEXT_COLOR: startScreenConstants.COLOR.TEXT,
+            BACKGROUND: startScreenConstants.COLOR.BUTTON_BACKGROUND,
+            CORNER_RADIUS: startScreenConstants.CORNER_RADIUS,
+        },
 
-        // SelfPlug
-        SELF_PLUG_TEXT: "Made with ❤️ by Ethan Tracey \n GetBuilding 2025",
-        SELF_PLUG_FONT_SIZE: startScreenFontSizes.SMALL,
-        SELF_PLUG_COLOR: startScreenColors.TEXT,
-        SELF_PLUG_ALPHA: 0.2,
+        SELF_PLUG: {
+            TEXT: startScreenConstants.TEXT.SELF_PLUG,
+            FONT_SIZE: startScreenConstants.FONT_SIZE.SMALL,
+            COLOR: startScreenConstants.COLOR.TEXT,
+            ALPHA: startScreenConstants.ALPHA,
+        },
     }
 }
