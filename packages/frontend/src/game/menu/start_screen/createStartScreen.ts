@@ -4,6 +4,7 @@ import fillMap from "../../map/utility/fillMap";
 import { createLight, createSkyBox, createGround, createFog } from "../../map/map_objects";
 import { startScreenMap } from "../../map/utility/startScreenMaps";
 import generateMaze from "../../map/utility/generateMaze";
+import { startScreenConfig } from "./startScreenConfig";
 
 export interface BabylonStartScreenProps {
   onStart: () => void;
@@ -16,19 +17,19 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
   // Arc camera rotates around a point
   const camera = new ArcRotateCamera(
     "arcCamera",
-    0,        // alpha - rotation angle
-    Math.PI / 3, // beta - vertical angle
-    45,       // radius - distance from target
-    new Vector3(0, 5, 0),
+    startScreenConfig.CAMERA.ALPHA,
+    startScreenConfig.CAMERA.BETA,
+    startScreenConfig.CAMERA.RADIUS,
+    startScreenConfig.CAMERA.TARGET,
     startScreenScene
   );
   camera.attachControl(canvas, true);
   // limit camera radius
-  camera.lowerRadiusLimit = 30;
-  camera.upperRadiusLimit = 60;
+  camera.lowerRadiusLimit = startScreenConfig.CAMERA.LOWER_RADIUS_LIMIT;
+  camera.upperRadiusLimit = startScreenConfig.CAMERA.UPPER_RADIUS_LIMIT;
 
-  camera.wheelDeltaPercentage = 0.01; // scroll speed
-  camera.fov = 0.8;
+  camera.wheelDeltaPercentage = startScreenConfig.CAMERA.WHEEL_DELTA_PERCENTAGE; // scroll speed
+  camera.fov = startScreenConfig.CAMERA.FOV;
   
   // Create environment
   // TODO: Add Loading Screen
@@ -56,14 +57,14 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
 
   const titleText = new TextBlock();
   titleText.width = 1;
-  titleText.text = "PUNCH MAZE";
-  titleText.color = "white";
-  titleText.fontSize = 82;
+  titleText.text = startScreenConfig.UI_CONFIG.TITLE_TEXT;
+  titleText.color = startScreenConfig.UI_CONFIG.TITLE_COLOR;
+  titleText.fontSize = startScreenConfig.UI_CONFIG.TITLE_FONT_SIZE;
   // Text Shadow
-  titleText.shadowColor = "yellow";
-  titleText.shadowBlur = 10;
-  titleText.shadowOffsetX = 2;
-  titleText.shadowOffsetY = 2;
+  titleText.shadowColor = startScreenConfig.UI_CONFIG.TITLE_SHADOW_COLOR;
+  titleText.shadowBlur = startScreenConfig.UI_CONFIG.TITLE_SHADOW_BLUR;
+  titleText.shadowOffsetX = startScreenConfig.UI_CONFIG.TITLE_SHADOW_OFFSET_X;
+  titleText.shadowOffsetY = startScreenConfig.UI_CONFIG.TITLE_SHADOW_OFFSET_Y;
   titleStack.addControl(titleText);
 
   // Menu Container
@@ -92,10 +93,10 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
 
   // Contestant name
   const contestantNameText = new TextBlock();
-  contestantNameText.text = "Contestant Name";
-  contestantNameText.color = "white";
-  contestantNameText.fontSize = 20;
-  contestantNameText.height = "30px";
+  contestantNameText.text = startScreenConfig.UI_CONFIG.INPUT_HEADER_TEXT;
+  contestantNameText.color = startScreenConfig.UI_CONFIG.INPUT_HEADER_COLOR;
+  contestantNameText.fontSize = startScreenConfig.UI_CONFIG.INPUT_HEADER_FONT_SIZE;
+  contestantNameText.height = "40px";
   contestantNameText.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
   topStack.addControl(contestantNameText);
   
@@ -103,18 +104,18 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
   const nameInput = new InputText();
   nameInput.width = 1;
   nameInput.height = "40px";
-  nameInput.color = "white";
-  nameInput.fontSize = 20;
+  nameInput.color = startScreenConfig.UI_CONFIG.INPUT_COLOR;
+  nameInput.fontSize = startScreenConfig.UI_CONFIG.INPUT_FONT_SIZE;
   topStack.addControl(nameInput);
 
   // Name check text
   const nameCheckText = new TextBlock();
-  nameCheckText.text = "Name must be at least 3 characters long and less than 10 characters";
-  nameCheckText.color = "white";
-  nameCheckText.fontSize = 15;
+  nameCheckText.text = startScreenConfig.UI_CONFIG.CHECK_TEXT;
+  nameCheckText.color = startScreenConfig.UI_CONFIG.CHECK_TEXT_COLOR;
+  nameCheckText.fontSize = startScreenConfig.UI_CONFIG.CHECK_TEXT_FONT_SIZE;
   nameCheckText.width = 1;
   nameCheckText.height = 0.2;
-  nameCheckText.alpha = 0.2;
+  nameCheckText.alpha = startScreenConfig.UI_CONFIG.CHECK_TEXT_ALPHA;
   nameCheckText.textWrapping = true;
   nameCheckText.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
   topStack.addControl(nameCheckText);
@@ -122,10 +123,10 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
 
   // Divider
   const divider = new Rectangle();
-  divider.width = 1;
+  divider.width = startScreenConfig.UI_CONFIG.DIVIDER_WIDTH;
   divider.height = "2px";
-  divider.color = "white";
-  divider.cornerRadius = 10;
+  divider.color = startScreenConfig.UI_CONFIG.DIVIDER_COLOR;
+  divider.cornerRadius = startScreenConfig.UI_CONFIG.DIVIDER_CORNER_RADIUS;
   menuContainer.addControl(divider);
 
   // Bottom StackPanel for buttons section
@@ -143,31 +144,31 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
   // Join Match button
   const joinMatchButton = Button.CreateSimpleButton("joinMatchButton", "Join Match");
   joinMatchButton.width = 1;
-  joinMatchButton.height = "50px";
-  joinMatchButton.color = "white";
-  joinMatchButton.background = "green";
-  joinMatchButton.cornerRadius = 10;
+  joinMatchButton.height = startScreenConfig.UI_CONFIG.BUTTON_HEIGHT;
+  joinMatchButton.color = startScreenConfig.UI_CONFIG.BUTTON_COLOR;
+  joinMatchButton.background = startScreenConfig.UI_CONFIG.BUTTON_BACKGROUND;
+  joinMatchButton.cornerRadius = startScreenConfig.UI_CONFIG.BUTTON_CORNER_RADIUS;
   bottomStack.addControl(joinMatchButton);
 
   // Start button
   const startButton = Button.CreateSimpleButton("createMatchButton", "Create Match");
   startButton.width = 1;
-  startButton.height = "50px";
-  startButton.color = "white";
-  startButton.background = "green";
-  startButton.cornerRadius = 10;
+  startButton.height = startScreenConfig.UI_CONFIG.BUTTON_HEIGHT;
+  startButton.color = startScreenConfig.UI_CONFIG.BUTTON_COLOR;
+  startButton.background = startScreenConfig.UI_CONFIG.BUTTON_BACKGROUND;
+  startButton.cornerRadius = startScreenConfig.UI_CONFIG.BUTTON_CORNER_RADIUS;
   bottomStack.addControl(startButton);
 
   // SelfPlug
   // TODO: Add github and normal selfplug things
   // Just wanted to create the space to know how to account for it
   const selfPlug = new TextBlock();
-  selfPlug.text = "Made with ❤️ by Ethan Tracey \n GetBuilding 2025";
+  selfPlug.text = startScreenConfig.UI_CONFIG.SELF_PLUG_TEXT;
   selfPlug.textWrapping = true;
-  selfPlug.color = "white";
-  selfPlug.fontSize = 15;
+  selfPlug.color = startScreenConfig.UI_CONFIG.SELF_PLUG_COLOR;
+  selfPlug.fontSize = startScreenConfig.UI_CONFIG.SELF_PLUG_FONT_SIZE;
   selfPlug.height = "40px";
-  selfPlug.alpha = 0.2;
+  selfPlug.alpha = startScreenConfig.UI_CONFIG.SELF_PLUG_ALPHA;
   selfPlug.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
   bottomStack.addControl(selfPlug);
 
@@ -194,7 +195,7 @@ export const createBabylonStartScreen = (canvas: HTMLCanvasElement, props: Babyl
   // Render loop
   startScreenEngine.runRenderLoop(() => {
     // Rotate camera around the map
-    camera.alpha += 0.001;
+    camera.alpha += startScreenConfig.CAMERA.CAMERA_SPEED;  
     startScreenScene.render();
   });
 
