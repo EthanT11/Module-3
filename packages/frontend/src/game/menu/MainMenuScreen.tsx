@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Engine, Scene, ArcRotateCamera } from "@babylonjs/core";
-import { drawStartMenuUI } from "./start_menu/drawStartMenuUI";
-import { createRoomScreenGUI } from "./room_menu/drawRoomMenu";
-import { Room } from "colyseus.js";
-import CreateGameEnvironment from "../CreateGameEnvironment";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
+import { Client, Room } from "colyseus.js";
+import { BACKEND_URL } from "../../networking/setupMultiplayer";
 import { createMenuEnvironment } from "./utility/createMenuEnvironment";
+import { createRoomMenuUI } from "./room_menu/drawRoomMenuUI";
+import { drawStartMenuUI } from "./start_menu/drawStartMenuUI";
+import CreateGameEnvironment from "../CreateGameEnvironment";
 
 interface MenuEnvironment {
   engine: Engine;
@@ -18,12 +19,13 @@ interface GUIManager {
   dispose: (() => void) | null;
 }
 
+type DisposableType = 'ui' | 'env' | 'all';
+type MenuType = "start" | "room";
 // Probably a lot more efficient to just use a single function
 // but I wanted to try out the switch statement
 // and it might be nice to have a disposal manager later
-type DisposableType = 'gui' | 'env' | 'all';
 const disposeType = (type: DisposableType, guiManager?: GUIManager, menuEnvironment?: MenuEnvironment | null) => {
-  const disposeGUI = () => {
+  const disposeUI = () => {
     if (guiManager?.texture) {
       guiManager.texture.dispose();
       guiManager.texture = null;
@@ -41,8 +43,8 @@ const disposeType = (type: DisposableType, guiManager?: GUIManager, menuEnvironm
   }
 
   switch (type) {
-    case 'gui':
-      disposeGUI();
+    case 'ui':
+      disposeUI();
       break;
     
     case 'env':
@@ -50,7 +52,7 @@ const disposeType = (type: DisposableType, guiManager?: GUIManager, menuEnvironm
       break;
     
     case 'all':
-      disposeGUI();
+      disposeUI();
       disposeEnv();
       break;
     default:
@@ -66,7 +68,39 @@ const MainMenuScreen = () => {
   const menuEnvironmentRef = useRef<MenuEnvironment | null>(null);
   const guiManagerRef = useRef<GUIManager>({ texture: null, dispose: null });
   // States
-  const [showRooms, setShowRooms] = useState(false);
+  const [showMenu, setShowMenu] = useState<MenuType>("start");
+  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
+
+  const handleCreateMatch = async () => {
+    try {
+      // Create a new room
+      const client = new Client(BACKEND_URL);
+      const room = await client.create("my_room");
+      setCurrentRoom(room);
+    } catch (error) {
+      console.error("Error creating match:", error);
+    }
+  };
+
+  const setUI = async (scene: Scene, showMenu: MenuType) => {
+    // Dispose the current gui
+    disposeType('ui', guiManagerRef.current, menuEnvironmentRef.current);
+
+    if (showMenu === "room") {
+      const { roomMenuUI, dispose } = createRoomMenuUI(scene);
+      guiManagerRef.current.texture = roomMenuUI;
+      guiManagerRef.current.dispose = dispose;
+    } else if (showMenu === "start")  {
+      const { startMenuUI, dispose } = await drawStartMenuUI(scene, {
+        onJoinMatch: () => setShowMenu("room"),
+        onCreateMatch: handleCreateMatch
+      });
+      guiManagerRef.current.texture = startMenuUI;
+      guiManagerRef.current.dispose = dispose;
+    } else {
+      throw new Error(`Invalid menu type: ${showMenu}`);
+    }
+  };
 
   useEffect(() => {
     const initializeMenuEnvironment = async () => {
@@ -74,12 +108,7 @@ const MainMenuScreen = () => {
         // Initialize the engine, scene and camera & set them to the ref
         const { engine, scene, camera } = await createMenuEnvironment(canvasRef.current);
         menuEnvironmentRef.current = { engine, scene, camera };
-        // Create the start screen GUI initially
-        const { startMenuUI } = await drawStartMenuUI(scene, {
-          onJoinMatch: () => setShowRooms(true),
-          onCreateMatch: () => console.log("Creating match")
-        });
-        guiManagerRef.current.texture = startMenuUI;
+        await setUI(scene, "start");
       }
     };
 
@@ -92,32 +121,15 @@ const MainMenuScreen = () => {
   }, []); // Only run once
 
   useEffect(() => {
-    const updateGUI = async () => {
-      if (menuEnvironmentRef.current) {
-        // Dispose the current gui
-        disposeType('gui', guiManagerRef.current, menuEnvironmentRef.current);
-        // Keep the scene from the menu environment ref
-        const { scene } = menuEnvironmentRef.current;
-        if (showRooms) {
-          const { roomScreenUI, dispose } = createRoomScreenGUI(scene);
-          guiManagerRef.current.texture = roomScreenUI;
-          guiManagerRef.current.dispose = dispose;
-        } else {
-          const { startMenuUI, dispose } = await drawStartMenuUI(scene, {
-            onJoinMatch: () => setShowRooms(true),
-            onCreateMatch: () => console.log("Creating match")
-          });
-          guiManagerRef.current.texture = startMenuUI;
-          guiManagerRef.current.dispose = dispose;
-        }
-      }
-    };
-    updateGUI();
-  }, [showRooms]);
+    // Set the UI based on the current menu
+    if (menuEnvironmentRef.current) {
+      setUI(menuEnvironmentRef.current.scene, showMenu);
+    }
+  }, [showMenu]);
 
-  // if (currentRoom) {
-  //   return <CreateGameEnvironment room={currentRoom} isHost={false} />;
-  // }
+  if (currentRoom) {
+    return <CreateGameEnvironment room={currentRoom} isHost={true} />;
+  }
 
   return (
     <div className="h-screen w-screen">
