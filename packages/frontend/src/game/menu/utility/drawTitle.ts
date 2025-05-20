@@ -1,7 +1,7 @@
 import { StackPanel, AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
-import { startScreenConfig } from "../start_screen/startScreenConfig";
+import { startScreenConfig } from "../start_menu/startScreenConfig";
 
-export const createTitle = (startScreenUI: AdvancedDynamicTexture) => {
+export const drawTitle = (startScreenUI: AdvancedDynamicTexture) => {
     // Title StackPanel
     const titleStack = new StackPanel();
     titleStack.width = 1;
@@ -9,6 +9,7 @@ export const createTitle = (startScreenUI: AdvancedDynamicTexture) => {
     titleStack.isVertical = true;
     titleStack.spacing = 15;
     titleStack.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    titleStack.fontWeight = "bold";
     startScreenUI.addControl(titleStack);
 
     const titleText = new TextBlock();

@@ -5,8 +5,8 @@ import { SCENE_CONFIG } from "../../config";
 
 const fillMap = (map: number[][], scene: Scene) => {
     // Get the ground size
-    const groundWidth = MAP_CONFIG.GROUND_CONFIG.width;
-    const groundHeight = MAP_CONFIG.GROUND_CONFIG.height;
+    const groundWidth = MAP_CONFIG.GROUND_CONFIG.width; // 100
+    const groundHeight = MAP_CONFIG.GROUND_CONFIG.height; // 100
     
     console.log("Ground Positions: ", groundWidth, groundHeight);
     

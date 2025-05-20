@@ -1,5 +1,5 @@
 import { ArcRotateCamera, Scene } from "@babylonjs/core";
-import { startScreenConfig } from "../start_screen/startScreenConfig";
+import { startScreenConfig } from "../start_menu/startScreenConfig";
 
 export const createArcCamera = (canvas: HTMLCanvasElement, startScreenScene: Scene) => {   
     const camera = new ArcRotateCamera(

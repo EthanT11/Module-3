@@ -1,9 +1,21 @@
-import { AdvancedDynamicTexture, Rectangle } from "@babylonjs/gui";
+import { startScreenConfig } from "./startScreenConfig";
+import { AdvancedDynamicTexture, Rectangle, Control, StackPanel, TextBlock, InputText, Button } from "@babylonjs/gui";
+import { drawTitle } from "../utility/drawTitle";
+import { Scene } from "@babylonjs/core";
 
-import { startScreenConfig } from "../start_screen/startScreenConfig";
-import { Control, StackPanel, TextBlock, InputText, Button } from "@babylonjs/gui";
+interface DrawStartMenuUIProps {
+  onJoinMatch: () => void;
+  onCreateMatch: () => void;
+}
 
-export const createStartMenu = (startScreenUI: AdvancedDynamicTexture, props: { onStart: () => void }) => {
+export const drawStartMenuUI = async (scene: Scene, props: DrawStartMenuUIProps): Promise<{ startMenuUI: AdvancedDynamicTexture, dispose: () => void }> => {
+    const startMenuUI = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
+    drawTitle(startMenuUI);
+    
+    const dispose = () => {
+        startMenuUI.dispose();
+    }
+
     // Menu Container
     const menuContainer = new Rectangle();
     menuContainer.width = "300px";
@@ -19,7 +31,7 @@ export const createStartMenu = (startScreenUI: AdvancedDynamicTexture, props: { 
     menuContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER; 
     menuContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
     menuContainer.top = "5%";
-    startScreenUI.addControl(menuContainer);
+    startMenuUI.addControl(menuContainer);
 
     // StackPanel for name input section
     const topStack = new StackPanel();
@@ -141,17 +153,28 @@ export const createStartMenu = (startScreenUI: AdvancedDynamicTexture, props: { 
       return input.text.length > 0;
     }
 
+    nameInput.onTextChangedObservable.add(() => {
+      const textCheck = handleInputText(nameInput);
+      nameInput.background = textCheck ? "green" : "red";
+    });
+    
     // Start button on click
     createMatchButton.onPointerClickObservable.add(() => {
       const textCheck = handleInputText(nameInput);
       nameInput.background = textCheck ? "green" : "red";
       if (textCheck) {
-        props.onStart();
+        props.onCreateMatch();
       }
     });
 
-    nameInput.onTextChangedObservable.add(() => {
+
+    joinMatchButton.onPointerClickObservable.add(() => {
       const textCheck = handleInputText(nameInput);
       nameInput.background = textCheck ? "green" : "red";
+      if (textCheck) {
+        props.onJoinMatch();
+      }
     });
+
+    return { startMenuUI, dispose };
   }
