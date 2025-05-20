@@ -42,8 +42,8 @@ export class FistComponent {
         // Create fill effect
         this.fillRect = createRectangle({
             name: "fillRect",
-            width: "100%",
-            height: "0%", // Starts at 0% height
+            width: "120px",
+            height: "0px",
             background: GUI_COLORS.accent,
             horizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
             verticalAlignment: Control.VERTICAL_ALIGNMENT_BOTTOM,
@@ -87,7 +87,8 @@ export class FistComponent {
         if (this.fillRect) {
             // Update fill height based on activation progress
             const fillPercentage = Math.min(100, (this.activationTimer / this.maxActivationTime) * 100);
-            this.fillRect.height = fillPercentage + "%";
+            const fillHeight = (fillPercentage / 100) * 120; // 120px is the container height
+            this.fillRect.height = `${fillHeight}px`;
             
             // When completely filled
             if (this.activationTimer >= this.maxActivationTime && !this.isFlashing) {
@@ -135,7 +136,7 @@ export class FistComponent {
         this.isFlashing = false;
         this.activationTimer = 0;
         if (this.fillRect) {
-            this.fillRect.height = "0%";
+            this.fillRect.height = "0px";
             this.fillRect.background = GUI_COLORS.accent;
         }
         console.log("Fist deactivated");
@@ -149,8 +150,8 @@ export class FistComponent {
             text: "FIST",
             color: GUI_COLORS.text,
             fontSize: GUI_FONT_SIZES.title,
-            width: "100%",
-            height: "100%",
+            width: "120px",
+            height: "120px",
             textHorizontalAlignment: Control.HORIZONTAL_ALIGNMENT_CENTER,
             textVerticalAlignment: Control.VERTICAL_ALIGNMENT_CENTER
         });
@@ -158,8 +159,8 @@ export class FistComponent {
         
         // Create and load the image
         this.image = new Image("fistIcon", iconPath);
-        this.image.width = "80%";
-        this.image.height = "80%";
+        this.image.width = "96px";
+        this.image.height = "96px";
         this.image.stretch = Image.STRETCH_UNIFORM;
         this.image.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.image.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;

@@ -1,12 +1,16 @@
 import { Vector3 } from "@babylonjs/core";
 
+export const pxToNum = (px: string): number => {
+    return parseInt(px.replace("px", ""));
+}
+
 export const startScreenConstants = {
     ALPHA: 0.2,
     CORNER_RADIUS: 10,
     SHADOW_BLUR: 10,
     SHADOW_OFFSET_X: 2,
     SHADOW_OFFSET_Y: 2,
-
+    
     COLOR: {
         TEXT: "yellow",
         BORDER: "orange",
@@ -29,6 +33,28 @@ export const startScreenConstants = {
         SELF_PLUG: "Made with ❤️ by Ethan Tracey \n GetBuilding 2025",
     }
 }
+
+export const startScreenUIDimensions = {
+    PADDING: "20px",
+    SPACING: 15,
+    ELEMENT_WIDTH: "200px",
+    ELEMENT_HEIGHT: "40px",
+
+    MENU_CONTAINER: {
+      HEIGHT: "450px",
+      WIDTH: "300px",
+      TOP: "60px",
+    },
+    TOP_STACK: {
+      HEIGHT: "400px",
+      WIDTH: "300px",
+    },
+    BOTTOM_STACK: {
+      WIDTH: "300px",
+      HEIGHT: "200px",
+      TOP: "140px",
+    }
+  }
 
 export const startScreenConfig = {
     // Arc Camera
@@ -53,6 +79,9 @@ export const startScreenConfig = {
     UI_CONFIG: {
         // Top StackPanel
         TITLE: {
+            WIDTH: "800px", // TODO: Make this dynamic
+            HEIGHT: "100px",
+            TOP: "30px",
             COLOR: startScreenConstants.COLOR.TEXT,
             FONT_SIZE: startScreenConstants.FONT_SIZE.TITLE,
             TEXT: startScreenConstants.TEXT.TITLE,
@@ -96,8 +125,6 @@ export const startScreenConfig = {
 
         DIVIDER: {
             COLOR: startScreenConstants.COLOR.BORDER,
-            WIDTH: 0.2,
-            HEIGHT: "2px",
             CORNER_RADIUS: startScreenConstants.CORNER_RADIUS,
         },
 
@@ -107,10 +134,13 @@ export const startScreenConfig = {
             BORDER_THICKNESS: 4,
             COLOR: startScreenConstants.COLOR.BORDER,
             CORNER_RADIUS: startScreenConstants.CORNER_RADIUS,
+            HEIGHT: startScreenUIDimensions.MENU_CONTAINER.HEIGHT,
             SHADOW_BLUR: startScreenConstants.SHADOW_BLUR,
             SHADOW_COLOR: startScreenConstants.COLOR.SHADOW,
             SHADOW_OFFSET_X: startScreenConstants.SHADOW_OFFSET_X,
             SHADOW_OFFSET_Y: startScreenConstants.SHADOW_OFFSET_Y,
+            TOP: startScreenUIDimensions.MENU_CONTAINER.TOP,
+            WIDTH: startScreenUIDimensions.MENU_CONTAINER.WIDTH,
         },
         BUTTON: {
             HEIGHT: "50px",
