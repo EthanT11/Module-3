@@ -4,7 +4,7 @@ import MainMenuScreen from "./game/menu/MainMenuScreen";
 export default () => {
   return (
     <div>
-      <MainMenuScreen />
+      {/* <MainMenuScreen /> */}
     </div>
   )
 };
