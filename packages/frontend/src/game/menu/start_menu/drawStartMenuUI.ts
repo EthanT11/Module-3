@@ -1,14 +1,7 @@
 import { startScreenConfig, startScreenUIDimensions } from "./startScreenConfig";
-import { AdvancedDynamicTexture, Rectangle, Control, StackPanel, TextBlock, InputText, Button } from "@babylonjs/gui";
-import { drawTitle } from "../utility/drawTitle";
+import { AdvancedDynamicTexture, TextBlock, InputText } from "@babylonjs/gui";
 import { Scene } from "@babylonjs/core";
-import { drawInput } from "../utility/drawInput";
-import { drawDivider } from "../utility/drawDivider";
-import { drawMenuContainer } from "../utility/drawMenuContainer";
-import { drawButton } from "../utility/drawButton";
-import { drawHeader } from "../utility/drawHeader";
-import { drawStack } from "../utility/drawStack";
-import { drawInfoMessage } from "../utility/drawMessage";
+import { drawTitle, drawInput, drawDivider, drawMenuContainer, drawButton, drawHeader, drawStack, drawInfoMessage } from "../utility";
 interface DrawStartMenuUIProps {
   onJoinMatch: () => void;
   onCreateMatch: () => void;
