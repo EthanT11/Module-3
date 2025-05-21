@@ -2,7 +2,12 @@ import { startScreenConfig, startScreenUIDimensions } from "./startScreenConfig"
 import { AdvancedDynamicTexture, Rectangle, Control, StackPanel, TextBlock, InputText, Button } from "@babylonjs/gui";
 import { drawTitle } from "../utility/drawTitle";
 import { Scene } from "@babylonjs/core";
-
+import { drawInput } from "../utility/drawInput";
+import { drawDivider } from "../utility/drawDivider";
+import { drawMenuContainer } from "../utility/drawMenuContainer";
+import { drawButton } from "../utility/drawButton";
+import { drawHeader } from "../utility/drawHeader";
+import { drawStack } from "../utility/drawStack";
 interface DrawStartMenuUIProps {
   onJoinMatch: () => void;
   onCreateMatch: () => void;
@@ -17,67 +22,25 @@ export const drawStartMenuUI = async (scene: Scene, props: DrawStartMenuUIProps)
     }
 
     // Menu Container
-    const menuContainer = new Rectangle();
-    menuContainer.width = startScreenUIDimensions.MENU_CONTAINER.WIDTH;
-    menuContainer.height = startScreenUIDimensions.MENU_CONTAINER.HEIGHT;
-    
-    menuContainer.background = startScreenConfig.UI_CONFIG.MENU_CONTAINER.BACKGROUND;
-    menuContainer.cornerRadius = startScreenConfig.UI_CONFIG.MENU_CONTAINER.CORNER_RADIUS;
-    menuContainer.thickness = startScreenConfig.UI_CONFIG.MENU_CONTAINER.BORDER_THICKNESS;
-    menuContainer.color = startScreenConfig.UI_CONFIG.MENU_CONTAINER.COLOR;
-    menuContainer.shadowColor = startScreenConfig.UI_CONFIG.MENU_CONTAINER.SHADOW_COLOR;
-    menuContainer.shadowBlur = startScreenConfig.UI_CONFIG.MENU_CONTAINER.SHADOW_BLUR;
-    menuContainer.shadowOffsetX = startScreenConfig.UI_CONFIG.MENU_CONTAINER.SHADOW_OFFSET_X;
-    menuContainer.shadowOffsetY = startScreenConfig.UI_CONFIG.MENU_CONTAINER.SHADOW_OFFSET_Y;
-    menuContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER; 
-    menuContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    menuContainer.top = startScreenConfig.UI_CONFIG.MENU_CONTAINER.TOP;
+    const menuContainer = drawMenuContainer();
     startMenuUI.addControl(menuContainer);
 
     // StackPanel for name input section
-    const topStack = new StackPanel();
-    topStack.width = startScreenUIDimensions.TOP_STACK.WIDTH;
-    topStack.height = startScreenUIDimensions.TOP_STACK.HEIGHT;
-    topStack.isVertical = true;
-    topStack.paddingTop = startScreenUIDimensions.PADDING;
-    topStack.paddingLeft = startScreenUIDimensions.PADDING;
-    topStack.paddingRight = startScreenUIDimensions.PADDING;
-    topStack.spacing = startScreenUIDimensions.SPACING;
+    const topStack = drawStack("top");
     menuContainer.addControl(topStack);
 
     // Contestant name
-    const inputHeader = new TextBlock();
-    inputHeader.text = startScreenConfig.UI_CONFIG.INPUT_HEADER.TEXT;
-    inputHeader.fontSize = startScreenConfig.UI_CONFIG.INPUT_HEADER.FONT_SIZE
-    inputHeader.color = startScreenConfig.UI_CONFIG.INPUT_HEADER.COLOR;
-    inputHeader.shadowColor = startScreenConfig.UI_CONFIG.INPUT_HEADER.SHADOW_COLOR;
-    inputHeader.shadowBlur = startScreenConfig.UI_CONFIG.INPUT_HEADER.SHADOW_BLUR;
-    inputHeader.shadowOffsetX = startScreenConfig.UI_CONFIG.INPUT_HEADER.SHADOW_OFFSET_X;
-    inputHeader.shadowOffsetY = startScreenConfig.UI_CONFIG.INPUT_HEADER.SHADOW_OFFSET_Y;
-    inputHeader.height = startScreenUIDimensions.ELEMENT_HEIGHT;
-    inputHeader.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
+    const inputHeader = drawHeader("Contestant Name");
     topStack.addControl(inputHeader);
     
     // Name input
     // NOTE: Babylon apparently doesn't support text horizontal alignment for InputText type field
-    const nameInput = new InputText();
-    nameInput.background = startScreenConfig.UI_CONFIG.INPUT.BACKGROUND;
-    nameInput.color = startScreenConfig.UI_CONFIG.INPUT.COLOR;
-    nameInput.focusedBackground = startScreenConfig.UI_CONFIG.INPUT.FOCUSED_BACKGROUND;
-    nameInput.fontSize = startScreenConfig.UI_CONFIG.INPUT.FONT_SIZE;
-    nameInput.height = startScreenUIDimensions.ELEMENT_HEIGHT;
-    nameInput.highlightColor = startScreenConfig.UI_CONFIG.INPUT.HIGHLIGHT_COLOR;
-    nameInput.placeholderText = startScreenConfig.UI_CONFIG.INPUT.PLACEHOLDER_TEXT;
-    nameInput.shadowBlur = startScreenConfig.UI_CONFIG.INPUT.SHADOW_BLUR;
-    nameInput.shadowColor = startScreenConfig.UI_CONFIG.INPUT.SHADOW_COLOR;
-    nameInput.shadowOffsetX = startScreenConfig.UI_CONFIG.INPUT.SHADOW_OFFSET_X;
-    nameInput.shadowOffsetY = startScreenConfig.UI_CONFIG.INPUT.SHADOW_OFFSET_Y;
-    nameInput.textHighlightColor = startScreenConfig.UI_CONFIG.INPUT.TEXT_HIGHLIGHT_COLOR;
-    nameInput.width = startScreenUIDimensions.ELEMENT_WIDTH;
+    const nameInput = drawInput(startScreenConfig.UI_CONFIG.INPUT.PLACEHOLDER_TEXT);
     
     topStack.addControl(nameInput);
 
     // Name check text
+    // TODO: Make into dynamic error message block
     const nameCheckText = new TextBlock();
     nameCheckText.text = startScreenConfig.UI_CONFIG.CHECK_TEXT.TEXT;
     nameCheckText.color = startScreenConfig.UI_CONFIG.CHECK_TEXT.COLOR;
@@ -89,51 +52,20 @@ export const drawStartMenuUI = async (scene: Scene, props: DrawStartMenuUIProps)
     nameCheckText.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
     topStack.addControl(nameCheckText);
 
-
     // Divider
-    const divider = new Rectangle();
-    divider.width = startScreenUIDimensions.ELEMENT_WIDTH;
-    divider.height = "2px";
-    divider.top = "20px";
-    divider.color = startScreenConfig.UI_CONFIG.DIVIDER.COLOR;
-    divider.cornerRadius = startScreenConfig.UI_CONFIG.DIVIDER.CORNER_RADIUS;
+    const divider = drawDivider("20px");
     menuContainer.addControl(divider);
 
     // Bottom StackPanel for buttons section
-    const bottomStack = new StackPanel();
-    bottomStack.width = startScreenUIDimensions.BOTTOM_STACK.WIDTH;
-    bottomStack.height = startScreenUIDimensions.BOTTOM_STACK.HEIGHT;
-    bottomStack.top = startScreenUIDimensions.BOTTOM_STACK.TOP;
-    bottomStack.isVertical = true;
-    bottomStack.paddingLeft = startScreenUIDimensions.PADDING;
-    bottomStack.paddingRight = startScreenUIDimensions.PADDING;
-    bottomStack.spacing = startScreenUIDimensions.SPACING;
+    const bottomStack = drawStack("bottom");
     menuContainer.addControl(bottomStack);
 
     // Join Match button
-    const joinMatchButton = Button.CreateSimpleButton("joinMatchButton", "Join Match");
-    joinMatchButton.width = startScreenUIDimensions.ELEMENT_WIDTH;
-    joinMatchButton.height = startScreenUIDimensions.ELEMENT_HEIGHT;
-    joinMatchButton.color = startScreenConfig.UI_CONFIG.BUTTON.COLOR;
-    joinMatchButton.background = startScreenConfig.UI_CONFIG.BUTTON.BACKGROUND;
-    joinMatchButton.cornerRadius = startScreenConfig.UI_CONFIG.BUTTON.CORNER_RADIUS;
-    // Text color
-    if (joinMatchButton.textBlock) {
-      joinMatchButton.textBlock.color = startScreenConfig.UI_CONFIG.BUTTON.TEXT_COLOR;
-    }
+    const joinMatchButton = drawButton("joinMatchButton", "Join Match", "primary");
     bottomStack.addControl(joinMatchButton);
 
     // Start button
-    const createMatchButton = Button.CreateSimpleButton("createMatchButton", "Create Match");
-    createMatchButton.width = startScreenUIDimensions.ELEMENT_WIDTH;
-    createMatchButton.height = startScreenUIDimensions.ELEMENT_HEIGHT;
-    createMatchButton.color = startScreenConfig.UI_CONFIG.BUTTON.COLOR;
-    createMatchButton.background = startScreenConfig.UI_CONFIG.BUTTON.BACKGROUND;
-    createMatchButton.cornerRadius = startScreenConfig.UI_CONFIG.BUTTON.CORNER_RADIUS;
-    // Text color
-    if (createMatchButton.textBlock) {
-      createMatchButton.textBlock.color = startScreenConfig.UI_CONFIG.BUTTON.TEXT_COLOR;
-    }
+    const createMatchButton = drawButton("createMatchButton", "Create Match", "secondary");
     bottomStack.addControl(createMatchButton);
 
     // SelfPlug

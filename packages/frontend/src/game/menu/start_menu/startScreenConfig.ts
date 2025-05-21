@@ -81,7 +81,7 @@ export const startScreenConfig = {
         TITLE: {
             WIDTH: "800px", // TODO: Make this dynamic
             HEIGHT: "100px",
-            TOP: "30px",
+            TOP: "20px",
             COLOR: startScreenConstants.COLOR.TEXT,
             FONT_SIZE: startScreenConstants.FONT_SIZE.TITLE,
             TEXT: startScreenConstants.TEXT.TITLE,
