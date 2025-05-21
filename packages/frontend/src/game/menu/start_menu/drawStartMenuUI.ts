@@ -8,6 +8,7 @@ import { drawMenuContainer } from "../utility/drawMenuContainer";
 import { drawButton } from "../utility/drawButton";
 import { drawHeader } from "../utility/drawHeader";
 import { drawStack } from "../utility/drawStack";
+import { drawInfoMessage } from "../utility/drawMessage";
 interface DrawStartMenuUIProps {
   onJoinMatch: () => void;
   onCreateMatch: () => void;
@@ -39,17 +40,9 @@ export const drawStartMenuUI = async (scene: Scene, props: DrawStartMenuUIProps)
     
     topStack.addControl(nameInput);
 
-    // Name check text
-    // TODO: Make into dynamic error message block
-    const nameCheckText = new TextBlock();
-    nameCheckText.text = startScreenConfig.UI_CONFIG.CHECK_TEXT.TEXT;
-    nameCheckText.color = startScreenConfig.UI_CONFIG.CHECK_TEXT.COLOR;
-    nameCheckText.fontSize = startScreenConfig.UI_CONFIG.CHECK_TEXT.FONT_SIZE;
-    nameCheckText.width = startScreenUIDimensions.ELEMENT_WIDTH;
-    nameCheckText.height = "80px";
-    nameCheckText.alpha = startScreenConfig.UI_CONFIG.CHECK_TEXT.ALPHA;
-    nameCheckText.textWrapping = true;
-    nameCheckText.textHorizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
+    // Name check text | Also error 
+    // TODO: implement error message
+    const nameCheckText = drawInfoMessage(startScreenConfig.UI_CONFIG.CHECK_TEXT.TEXT);
     topStack.addControl(nameCheckText);
 
     // Divider

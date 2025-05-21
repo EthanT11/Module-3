@@ -10,6 +10,7 @@ import { drawMenuContainer } from "../utility/drawMenuContainer";
 import { drawButton } from "../utility/drawButton";
 import { drawHeader } from "../utility/drawHeader";
 import { drawStack } from "../utility/drawStack";
+import { drawInfoMessage } from "../utility/drawMessage";
 export const createRoomMenuUI = (scene: Scene) => {
   const colyseusClient = new Client(BACKEND_URL);
   const roomMenuUI = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
@@ -38,14 +39,20 @@ export const createRoomMenuUI = (scene: Scene) => {
   const codeInput = drawInput("YZ2323");
   codeStack.addControl(codeInput);
 
-  const divider = drawDivider("40px");
+  const checkText = drawInfoMessage("Please enter a valid room code");
+  codeStack.addControl(checkText);
+
+  const divider = drawDivider("20px");
   codeContainer.addControl(divider);
 
+  const buttonStack = drawStack("bottom");
+  codeContainer.addControl(buttonStack);
+
   const joinButton = drawButton("joinButton", "Join Game", "primary");
-  codeStack.addControl(joinButton);
+  buttonStack.addControl(joinButton);
 
   const goBackButton = drawButton("goBackButton", "Go Back", "secondary");
-  codeStack.addControl(goBackButton);
+  buttonStack.addControl(goBackButton);
 
   const roomContainer = drawMenuContainer();
   mainPanel.addControl(roomContainer);
