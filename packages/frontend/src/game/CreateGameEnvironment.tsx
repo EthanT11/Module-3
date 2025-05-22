@@ -9,7 +9,8 @@ import { createPlayer } from "./player/createPlayer";
 import { PlayerStateManager } from "./player/PlayerState";
 import loadMap from "./map/loadMap";
 import { GameHUD } from "./game_hud/GameHUD";
-
+import { useRoomContext } from "../context/RoomContext";
+import { useNavigate } from "react-router";
 // RESOURCES
 // https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
 // https://www.youtube.com/watch?v=npt_oXGTLfg
@@ -17,9 +18,12 @@ import { GameHUD } from "./game_hud/GameHUD";
 // TEXTURES
 // https://polyhaven.com/a/rocky_terrain_02 | Covered under CC0 license 
 
-const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }): JSX.Element => {
+const CreateGameEnvironment = (): JSX.Element => {
     // TODO: Look into better error handling for the engine and canvas
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
+    const { room, isHost } = useRoomContext();
+    const navigate = useNavigate();
+
 
     useEffect( () => {
         let engine: Engine;
@@ -74,8 +78,14 @@ const CreateGameEnvironment = ({ room, isHost }: { room: Room, isHost: boolean }
                 gameHUD = new GameHUD(scene);
                 
                 // Setup the multiplayer and map
-                setupMultiplayer(scene, camera, playerStateManager, room, gameHUD);
-                loadMap(scene, playerStateManager, isHost, room);
+                if (room) {
+                    setupMultiplayer(scene, camera, playerStateManager, room, gameHUD);
+                    loadMap(scene, playerStateManager, isHost, room);
+                } else {
+                    // If failed redirect to main menu
+                    console.error("CreateEnvironment: Current room is not found");
+                    navigate("/");
+                }
 
                 // Add debug logging for goal creation
                 console.log("Checking for goal mesh:", scene.getMeshByName("goal"));

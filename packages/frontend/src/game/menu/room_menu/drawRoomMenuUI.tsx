@@ -1,12 +1,17 @@
 import { Scene } from "@babylonjs/core";
 import { AdvancedDynamicTexture, StackPanel, TextBlock, Button, Rectangle, Image } from "@babylonjs/gui";
-import { Client, RoomAvailable } from "colyseus.js";
-import { BACKEND_URL } from "../../../networking/setupMultiplayer";
+import { RoomAvailable } from "colyseus.js";
 import { startScreenConstants, startScreenConfig, startScreenUIDimensions } from "../start_menu/startScreenConfig";
 import { drawTitle, drawInput, drawDivider, drawMenuContainer, drawButton, drawHeader, drawStack, drawInfoMessage } from "../utility";
 
-export const createRoomMenuUI = (scene: Scene) => {
-  const colyseusClient = new Client(BACKEND_URL);
+interface RoomMenuUIProps {
+  scene: Scene;
+  getAvailableRooms: () => Promise<RoomAvailable[]>;
+  handleJoinMatch: (roomId: string) => void;
+  handleGoBack: () => void;
+}
+
+export const createRoomMenuUI = ({ scene, getAvailableRooms, handleJoinMatch, handleGoBack }: RoomMenuUIProps) => {
   const roomMenuUI = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
   drawTitle(roomMenuUI);
 
@@ -119,14 +124,13 @@ export const createRoomMenuUI = (scene: Scene) => {
     });
     buttonHolder.addControl(joinButton);
 
-    // joinButton.onPointerClickObservable.add(async () => {
-    //   try {
-    //     const joinedRoom = await colyseusClient.joinById(room.roomId);
-    //     console.log("Joined room:", joinedRoom.roomId);
-    //   } catch (error) {
-    //     console.error("Error joining room:", error);
-    //   }
-    // });
+    joinButton.onPointerClickObservable.add(async () => {
+      handleJoinMatch(room.roomId);
+    });
+
+    goBackButton.onPointerClickObservable.add(() => {
+      handleGoBack();
+    });
 
     return roomContainer;
   };
@@ -134,7 +138,7 @@ export const createRoomMenuUI = (scene: Scene) => {
   // Function to update rooms list
   const updateRooms = async () => {
     try {
-      const availableRooms = await colyseusClient.getAvailableRooms();
+      const availableRooms = await getAvailableRooms();
       roomsPanel.clearControls();
       
       if (availableRooms.length === 0) {
@@ -144,7 +148,7 @@ export const createRoomMenuUI = (scene: Scene) => {
         noRoomsText.fontSize = 18;
         roomsPanel.addControl(noRoomsText);
       } else {
-        availableRooms.forEach(room => {
+        availableRooms.forEach((room: RoomAvailable) => {
           roomsPanel.addControl(createRoomContainer(room));
         });
       }
@@ -159,9 +163,19 @@ export const createRoomMenuUI = (scene: Scene) => {
   // Update rooms every 5 seconds
   const interval = setInterval(updateRooms, 5000);
 
+
+  // Update the join button click handler
+  joinButton.onPointerClickObservable.add(async () => {
+    const roomCode = codeInput.text.trim();
+    if (roomCode) {
+      handleJoinMatch(roomCode);  
+    } else {
+      checkText.text = "Please enter a room code";
+    }
+  });
   // Return both the texture and a dispose function
   return {
     roomMenuUI,
     dispose
   };
-}; 
+};

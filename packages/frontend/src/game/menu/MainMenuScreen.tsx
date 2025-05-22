@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Engine, Scene, ArcRotateCamera } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
-import { Client, Room } from "colyseus.js";
-import { BACKEND_URL } from "../../networking/setupMultiplayer";
 import { createMenuEnvironment } from "./utility/createMenuEnvironment";
 import { createRoomMenuUI } from "./room_menu/drawRoomMenuUI";
 import { drawStartMenuUI } from "./start_menu/drawStartMenuUI";
-import CreateGameEnvironment from "../CreateGameEnvironment";
+import { useNavigate } from "react-router";
+import { useRoomContext } from "../../context/RoomContext";
 
 interface MenuEnvironment {
   engine: Engine;
@@ -69,34 +68,54 @@ const MainMenuScreen = () => {
   const guiManagerRef = useRef<GUIManager>({ texture: null, dispose: null });
   // States
   const [showMenu, setShowMenu] = useState<MenuType>("start");
-  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
+  // Context & Router
+  const { createRoom, getAvailableRooms, joinRoom } = useRoomContext();
+  const navigate = useNavigate();
 
   const handleCreateMatch = async () => {
     try {
-      // Create a new room
-      const client = new Client(BACKEND_URL);
-      const room = await client.create("my_room");
-      setCurrentRoom(room);
+      const newRoom = await createRoom();
+      if (newRoom) {
+        navigate(`/lobby/${newRoom.roomId}`);
+      }
     } catch (error) {
       console.error("Error creating match:", error);
     }
   };
 
+  const handleJoinMatch = async (roomId: string) => {
+    try {
+      const joinedRoom = await joinRoom(roomId);
+      if (joinedRoom) {
+        navigate(`/lobby/${joinedRoom.roomId}`);
+      }
+    } catch (error) {
+      console.error("Error joining match:", error);
+    }
+  };
+
+  const handleGoBack = () => {
+    setShowMenu("start");
+  };
+
+  
   const setUI = async (scene: Scene, showMenu: MenuType) => {
+    const setGuiRef = (texture: AdvancedDynamicTexture, dispose: () => void) => {
+      guiManagerRef.current.texture = texture;
+      guiManagerRef.current.dispose = dispose;
+    };
     // Dispose the current gui
     disposeType('ui', guiManagerRef.current, menuEnvironmentRef.current);
 
     if (showMenu === "room") {
-      const { roomMenuUI, dispose } = createRoomMenuUI(scene);
-      guiManagerRef.current.texture = roomMenuUI;
-      guiManagerRef.current.dispose = dispose;
+      const { roomMenuUI, dispose } = createRoomMenuUI({ scene, getAvailableRooms, handleJoinMatch, handleGoBack });
+      setGuiRef(roomMenuUI, dispose);
     } else if (showMenu === "start")  {
-      const { startMenuUI, dispose } = await drawStartMenuUI(scene, {
+      const { startMenuUI, dispose } = await drawStartMenuUI(scene, { 
         onJoinMatch: () => setShowMenu("room"),
         onCreateMatch: handleCreateMatch
       });
-      guiManagerRef.current.texture = startMenuUI;
-      guiManagerRef.current.dispose = dispose;
+      setGuiRef(startMenuUI, dispose);
     } else {
       throw new Error(`Invalid menu type: ${showMenu}`);
     }
@@ -126,10 +145,6 @@ const MainMenuScreen = () => {
       setUI(menuEnvironmentRef.current.scene, showMenu);
     }
   }, [showMenu]);
-
-  if (currentRoom) {
-    return <CreateGameEnvironment room={currentRoom} isHost={true} />;
-  }
 
   return (
     <div className="h-screen w-screen">
