@@ -6,6 +6,7 @@ import App from './App.js'
 import MainMenuScreen from './game/menu/MainMenuScreen'
 import CreateGameEnvironment from './game/CreateGameEnvironment'
 import { RoomProvider } from './context/RoomContext'
+import CreateLobby from './game/lobby/CreateLobby'
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode> | FINDME: Turned off for now since it's causing players to double up
@@ -13,8 +14,8 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <Routes>
           <Route index element={<MainMenuScreen />} />
-          <Route path="/lobby/:roomId" element={<CreateGameEnvironment />} />
-          {/* TODO: game route */}
+          <Route path="/lobby/:roomId" element={<CreateLobby />} />
+          <Route path="/game/:roomId" element={<CreateGameEnvironment />} />
           {/* TODO: about route */}
       </Routes>
     </BrowserRouter>
