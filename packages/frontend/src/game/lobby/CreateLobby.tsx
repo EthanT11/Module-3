@@ -1,16 +1,18 @@
-import { Engine, Mesh, AbstractMesh, Vector3, MeshBuilder, StandardMaterial, Color3 } from "@babylonjs/core"
-import { Room } from "colyseus.js";
+import { Engine, Scene, UniversalCamera, Vector3, HemisphericLight, MeshBuilder, Color4, Color3 } from "@babylonjs/core"
 import { useRef, useEffect } from "react"
-import { setupMultiplayer } from "../../networking/setupMultiplayer";
-import createPlayerCamera from "../player/createPlayerCamera";
+// import { setupMultiplayer } from "../../networking/setupMultiplayer";
+// import createPlayerCamera from "../player/createPlayerCamera";
 import { setupScene } from "../setupScene";
 import { SCENE_CONFIG } from "../config";
-import { createPlayer } from "../player/createPlayer";
-import { PlayerStateManager } from "../player/PlayerState";
-import loadMap from "../map/loadMap";
+// import { createPlayer } from "../player/createPlayer";
+// import { PlayerStateManager } from "../player/PlayerState";
+// import loadMap from "../map/loadMap";
 // import { GameHUD } from "./game_hud/GameHUD";
 import { useRoomContext } from "../../context/RoomContext";
 import { useNavigate } from "react-router";
+import useSupabase from "../../hooks/useSupabase";
+// https://kenney.nl/assets/animated-characters-2
+// mixamo
 
 const CreateLobby = (): JSX.Element => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
@@ -36,31 +38,55 @@ const CreateLobby = (): JSX.Element => {
 
             // Start the loading screen
             engine.loadingScreen.displayLoadingUI();
-            engine.loadingScreen.loadingUIBackgroundColor = "teal";
+            engine.loadingScreen.loadingUIBackgroundColor = "black";
 
             try {
-                // Initialize the player state manager
-                const playerStateManager = new PlayerStateManager();
-
-                // Setup the scene
                 const scene = await setupScene(engine);
+                scene.clearColor = new Color4(0 , 0.8, 0.9, 1);
+                scene.ambientColor = new Color3(0.3, 0.3, 0.3);
+
+                try {
+                    const camera = new UniversalCamera(
+                        "playerCamera",
+                        new Vector3(0, 1, 0),
+                        scene
+                    );
+                    camera.attachControl(canvas, true);
+                    camera.inertia = 0.4;
+                } catch (error) {
+                    console.error("CreateLobby: Error setting up camera", error);
+                }
+
+                try {
+                    const { getAssetUrl } = useSupabase();
+                    const modelUrl = getAssetUrl("models", "newCharacterModel.glb");
+                } catch (error) {
+                    console.error("CreateLobby: Error setting up model", error);
+                }
+
+                const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
+                light.intensity = 0.5;
+                const ground = MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
+                ground.position.y = 0;
+                // Initialize the player state manager
+                // const playerStateManager = new PlayerStateManager();
 
                 // Setup the player
-                const camera = createPlayerCamera(scene, canvas);
-                createPlayer(scene, camera, playerStateManager); // TODO: Probably consolidate this into the setupPlayerCamera function
+                // const camera = createPlayerCamera(scene, canvas);
+                // createPlayer(scene, camera, playerStateManager); // TODO: Probably consolidate this into the setupPlayerCamera function
                 
                 // TODO: Add a lobby HUD
                 
                 // Setup the multiplayer and map
-                if (room) {
-                    setupMultiplayer(scene, camera, playerStateManager, room);
-                    // TODO: Create a lobby Map
-                    loadMap(scene, playerStateManager, isHost, room);
-                } else {
-                    // If failed redirect to main menu
-                    console.error("CreateEnvironment: Current room is not found");
-                    navigate("/");
-                }
+                // if (room) {
+                //     setupMultiplayer(scene, camera, playerStateManager, room);
+                //     // TODO: Create a lobby Map
+                //     loadMap(scene, playerStateManager, isHost, room);
+                // } else {
+                //     // If failed redirect to main menu
+                //     console.error("CreateEnvironment: Current room is not found");
+                //     navigate("/");
+                // }
 
                 scene.executeWhenReady(() => {
                     engine.loadingScreen.hideLoadingUI();

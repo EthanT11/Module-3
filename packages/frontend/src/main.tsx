@@ -15,7 +15,7 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
           <Route index element={<MainMenuScreen />} />
           <Route path="/lobby/:roomId" element={<CreateLobby />} />
-          <Route path="/game/:roomId" element={<CreateGameEnvironment />} />
+          {/* <Route path="/game/:roomId" element={<CreateGameEnvironment /> */}
           {/* TODO: about route */}
       </Routes>
     </BrowserRouter>
