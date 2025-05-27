@@ -1,4 +1,4 @@
-import { Engine, Scene, UniversalCamera, Vector3, HemisphericLight, MeshBuilder, Color4, Color3, AbstractMesh, LoadAssetContainerAsync, AssetContainer, AnimationGroup, TransformNode, Matrix, FollowCamera, PointerEventTypes } from "@babylonjs/core"
+import { Engine, Scene, UniversalCamera, Vector3, HemisphericLight, MeshBuilder, Color4, Color3, AbstractMesh, LoadAssetContainerAsync, AssetContainer, AnimationGroup, TransformNode, Matrix, FollowCamera, PointerEventTypes, Vector2 } from "@babylonjs/core"
 import { useRef, useEffect } from "react"
 // import { setupMultiplayer } from "../../networking/setupMultiplayer";
 import { setupScene } from "../setupScene";
@@ -21,6 +21,7 @@ const CreateLobby = (): JSX.Element => {
     useEffect( () => {
         let engine: Engine;
         let playerRotationY = 0;
+        const keys = { w: false, a: false, s: false, d: false };
         // TODO: Add a lobby HUD
         // let gameHUD: GameHUD;
 
@@ -50,7 +51,6 @@ const CreateLobby = (): JSX.Element => {
                     let modelContainer: AssetContainer;
                     let playerMesh: AbstractMesh;
                     let camera: FollowCamera;
-                    let playerTransformNode: TransformNode;
 
                     interface Animations {
                         tpose: AnimationGroup;
@@ -116,6 +116,7 @@ const CreateLobby = (): JSX.Element => {
 
                             // Set the camera to always follow the player mesh
                             camera.lockedTarget = playerMesh;
+                            camera.lowerHeightOffsetLimit = 10; // Helps angle the camera and avoid clipping
                             camera.rotationOffset = 180; // Always behind the player
 
                             // Rotation handling
@@ -123,11 +124,50 @@ const CreateLobby = (): JSX.Element => {
                                 if (pointerInfo.type === PointerEventTypes.POINTERMOVE && document.pointerLockElement) {
                                     const deltaX = pointerInfo.event.movementX || 0;
                                     const sensitivity = 0.003;
-                                    playerRotationY += deltaX * sensitivity;
+                                    playerRotationY -= deltaX * sensitivity;
 
                                     // Normalize
                                     playerRotationY = (playerRotationY + Math.PI * 2) % (Math.PI * 2);
                                     playerMesh.rotation.y = playerRotationY;
+                                }
+                            });
+
+                            const moveSpeed = 0.1;
+                            const directionMap = {
+                                w: 0,
+                                a: Math.PI / 2,
+                                s: Math.PI,
+                                d: -Math.PI / 2,
+                            };
+                            scene.onKeyboardObservable.add((kb) => {
+                                if (kb.type === 1) { // key down
+                                    if (kb.event.code === "KeyW") keys.w = true;
+                                    if (kb.event.code === "KeyA") keys.a = true;
+                                    if (kb.event.code === "KeyS") keys.s = true;
+                                    if (kb.event.code === "KeyD") keys.d = true;
+                                } else if (kb.type === 2) { // key up
+                                    if (kb.event.code === "KeyW") keys.w = false;
+                                    if (kb.event.code === "KeyA") keys.a = false;
+                                    if (kb.event.code === "KeyS") keys.s = false;
+                                    if (kb.event.code === "KeyD") keys.d = false;
+                                }
+                            });
+                            scene.onBeforeRenderObservable.add(() => {
+                                if (!playerMesh) return;
+                                let move = new Vector3(0, 0, 0);
+                                const angle = playerMesh.rotation.y;
+                                // Loop through the direction map and add the movement to the move vector
+                                (Object.keys(directionMap) as (keyof typeof keys)[]).forEach((key) => {
+                                    if (keys[key]) {
+                                        const dir = angle + directionMap[key];
+                                        move.x += Math.sin(dir);
+                                        move.z += Math.cos(dir);
+                                    }
+                                });
+                                // Normalize for diagonal movement
+                                if (move.length() > 0) {
+                                    move.normalize().scaleInPlace(moveSpeed);
+                                    playerMesh.position.addInPlace(move);
                                 }
                             });
                         } catch (error) {
@@ -185,7 +225,7 @@ const CreateLobby = (): JSX.Element => {
         })
 
         return () => {
-            engine.dispose()
+            engine?.dispose();
         }
     }, [])
 
