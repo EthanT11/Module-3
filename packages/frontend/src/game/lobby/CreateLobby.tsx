@@ -132,7 +132,7 @@ const CreateLobby = (): JSX.Element => {
                                 }
                             });
 
-                            const moveSpeed = 0.1;
+                            const moveSpeed = 0.3;
                             const directionMap = {
                                 w: 0,
                                 a: Math.PI / 2,
@@ -152,22 +152,70 @@ const CreateLobby = (): JSX.Element => {
                                     if (kb.event.code === "KeyD") keys.d = false;
                                 }
                             });
+                            let wasMoving = false;
                             scene.onBeforeRenderObservable.add(() => {
                                 if (!playerMesh) return;
                                 let move = new Vector3(0, 0, 0);
                                 const angle = playerMesh.rotation.y;
+                                let isMoving = false;
                                 // Loop through the direction map and add the movement to the move vector
                                 (Object.keys(directionMap) as (keyof typeof keys)[]).forEach((key) => {
                                     if (keys[key]) {
                                         const dir = angle + directionMap[key];
                                         move.x += Math.sin(dir);
                                         move.z += Math.cos(dir);
+                                        isMoving = true;
                                     }
                                 });
                                 // Normalize for diagonal movement
                                 if (move.length() > 0) {
                                     move.normalize().scaleInPlace(moveSpeed);
                                     playerMesh.position.addInPlace(move);
+                                }
+                                // Animation switching
+                                if (isMoving && !wasMoving) {
+                                    if (animations.run) animations.run.play(true);
+                                    if (animations.idle) animations.idle.stop();
+                                } else if (!isMoving && wasMoving) {
+                                    if (animations.idle) animations.idle.play(true);
+                                    if (animations.run) animations.run.stop();
+                                }
+                                wasMoving = isMoving;
+                            });
+                            let isPunching = false;
+                            let isBigPunching = false;
+                            scene.onPointerObservable.add((pointerInfo) => {
+                                if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                                    if (pointerInfo.event.button === 0) {
+                                        // left click
+                                        if (animations.punch) {
+                                            if (!isPunching) {
+                                                isPunching = true;
+                                                animations.punch.loopAnimation = false;
+                                                animations.punch.from = 0;
+                                                animations.punch.to = 40; // 
+                                                animations.punch.play(true);
+                                            }
+                                        }
+                                    } else if (pointerInfo.event.button === 2) {
+                                        // right click
+                                        if (animations.bigPunch) {
+                                            if (!isBigPunching) {   
+                                                isBigPunching = true;
+                                                // TODO: Add a delay to the big punch
+                                                animations.bigPunch.play(true);
+                                            }
+                                        }
+                                    }
+                                } else if (pointerInfo.type === PointerEventTypes.POINTERUP) {
+                                    if (animations.punch) {
+                                        isPunching = false;
+                                        animations.punch.stop();
+                                    }
+                                    if (animations.bigPunch) {
+                                        isBigPunching = false;
+                                        animations.bigPunch.stop();
+                                    }
                                 }
                             });
                         } catch (error) {
