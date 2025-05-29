@@ -8,6 +8,7 @@ export class Player extends Schema {
   @type("number") y: number = 0;
   @type("number") z: number = 0;
   @type("number") rotationY: number = 0;
+  @type("boolean") isMoving: boolean = false;
 }
 
 export class Map extends Schema {

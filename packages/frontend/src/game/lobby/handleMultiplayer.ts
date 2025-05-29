@@ -2,8 +2,10 @@ import { Scene, AbstractMesh } from "@babylonjs/core";
 import { Room } from "colyseus.js";
 import { MyRoomState } from "../../../../backend-colyseus/src/rooms/schema/MyRoomState";
 import { createPlayerModel } from "./createPlayerModel";
+import { AnimationHandler } from "./handleAnimations";
 
 const playerMeshes = new Map<string, AbstractMesh>();
+const playerAnimations = new Map<string, AnimationHandler>();
 
 export const handleMultiplayer = (
     scene: Scene,
@@ -35,12 +37,17 @@ export const handleMultiplayer = (
             console.error("CreateLobby: Failed to create player");
             return;
         }
-        const { playerMesh: remoteMesh } = playerResult;
+        const { playerMesh: remoteMesh, animations: remoteAnimations } = playerResult;
         playerMesh.showBoundingBox = true;
         remoteMesh.showBoundingBox = true;
         
         // Store remote player mesh in map
         playerMeshes.set(sessionId, remoteMesh);
+
+        // Setup animation handler
+        const animationHandler = new AnimationHandler(scene, remoteAnimations);
+        playerAnimations.set(sessionId, animationHandler);
+        
 
         // Set initial position
         remoteMesh.position.set(player.x, player.y, player.z);
@@ -49,10 +56,18 @@ export const handleMultiplayer = (
     
     roomState.players.onRemove((player, sessionId) => {
         console.log("Player left: ", player, sessionId);
+        // Remote Player Mesh
         const removedPlayerMesh = playerMeshes.get(sessionId);
         if (removedPlayerMesh) {
             removedPlayerMesh.dispose();
             playerMeshes.delete(sessionId);
+        }
+
+        // Remote Player Animation Handler
+        const animationHandler = playerAnimations.get(sessionId);
+        if (animationHandler) {
+            animationHandler.dispose();
+            playerAnimations.delete(sessionId);
         }
     });
 
@@ -62,9 +77,17 @@ export const handleMultiplayer = (
             if (sessionId === room.sessionId) return; // Skip local player
 
             const remoteMesh = playerMeshes.get(sessionId);
+            const animationHandler = playerAnimations.get(sessionId);
+            
             if (remoteMesh) {
                 remoteMesh.position.set(player.x, player.y, player.z);
                 remoteMesh.rotation.y = player.rotationY;
+
+                // Handle remote player movement animation
+                if (animationHandler) {
+                    const isMoving = player.isMoving;
+                    animationHandler.handleMovement(isMoving);
+                }
             }
         });
     });
@@ -76,6 +99,7 @@ export const handleMultiplayer = (
     scene.onBeforeRenderObservable.add(() => {
         if (playerMesh) {
             const currentTime = Date.now();
+            // Check if the current time minus the last update time is greater than the update interval
             if (currentTime - lastUpdateTime >= UPDATE_INTERVAL) {
                 room.send("updatePosition", {
                     x: playerMesh.position.x,

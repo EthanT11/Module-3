@@ -16,10 +16,14 @@ export class MyRoom extends Room<MyRoomState> {
       const player = this.state.players.get(client.sessionId); // Get the player from the players map
       if (!player) return;
       // console.log("Updating player position: ", player.x, player.y, player.z, player.rotationY, message);
+      // Check if player is moving by comparing the current position with the new position
+      const isMoving = Math.abs(player.x - message.x) > 0.01 || Math.abs(player.z - message.z) > 0.01;
+      
       player.x = message.x;
       player.y = message.y;
       player.z = message.z;
       player.rotationY = message.rotationY;
+      player.isMoving = isMoving;
       // console.log("Updated player position: ", player.x, player.y, player.z, player.rotationY);
     });
 
