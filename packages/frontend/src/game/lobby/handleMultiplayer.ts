@@ -36,6 +36,8 @@ export const handleMultiplayer = (
             return;
         }
         const { playerMesh: remoteMesh } = playerResult;
+        playerMesh.showBoundingBox = true;
+        remoteMesh.showBoundingBox = true;
         
         // Store remote player mesh in map
         playerMeshes.set(sessionId, remoteMesh);
@@ -69,7 +71,7 @@ export const handleMultiplayer = (
 
     // Send local player position updates
     let lastUpdateTime = 0;
-    const UPDATE_INTERVAL = 100; // Update every 100ms
+    const UPDATE_INTERVAL = 100; // Update every 100ms, lower is smoother BUT may cause lag
 
     scene.onBeforeRenderObservable.add(() => {
         if (playerMesh) {

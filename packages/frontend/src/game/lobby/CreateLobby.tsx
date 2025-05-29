@@ -15,6 +15,7 @@ import { createCamera } from "./createCamera";
 import { setupMovement } from "./handleMovement";
 import { setupCombat } from "./handleCombat";
 import { handleMultiplayer } from "./handleMultiplayer";
+import { AnimationHandler } from "./handleAnimations";
 // https://kenney.nl/assets/animated-characters-2
 // mixamo
 
@@ -62,9 +63,9 @@ const CreateLobby = (): JSX.Element => {
                 const camera = createCamera(playerMesh, scene);
 
                 // Setup player controls and interactions
-                const movementState = setupMovement(scene, playerMesh, animations);
-                // NOTE: Just factored out to clean up the code
-                setupCombat(scene, animations, movementState);
+                const animationHandler = new AnimationHandler(scene, animations);
+                const movementState = setupMovement(scene, playerMesh, animationHandler);
+                setupCombat(scene, animationHandler, movementState);
 
 
                 // Setup scene lighting and ground

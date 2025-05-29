@@ -1,6 +1,7 @@
 import { Scene, Vector3, AbstractMesh } from "@babylonjs/core";
 import { Animations } from "./createPlayerModel";
 import { handleRotation } from "./handleRotation";
+import { AnimationHandler } from "./handleAnimations";
 
 export interface MovementState {
     keys: { w: boolean; a: boolean; s: boolean; d: boolean };
@@ -31,7 +32,7 @@ const DIRECTION_MAP = {
 export const setupMovement = (
     scene: Scene,
     playerMesh: AbstractMesh,
-    animations: Animations
+    animationHandler: AnimationHandler
 ) => {
 
     // Init movement state 
@@ -81,16 +82,8 @@ export const setupMovement = (
             playerMesh.position.addInPlace(move);
         }
 
-        // Animation switching
-        // TODO: Create an animation handler
-        if (isMoving && !state.wasMoving) {
-            if (animations.run) animations.run.play(true);
-            if (animations.idle) animations.idle.stop();
-        } else if (!isMoving && state.wasMoving) {
-            if (animations.idle) animations.idle.play(true);
-            if (animations.run) animations.run.stop();
-        }
-        state.wasMoving = isMoving;
+        // Animation switching | pass the isMoving state to the animation handler
+        animationHandler.handleMovement(isMoving);
     });
 
     return state;
