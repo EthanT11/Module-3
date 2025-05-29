@@ -15,7 +15,7 @@ export interface Animations {
     victory: AnimationGroup;
 }
 
-export const createPlayerModel = async (scene: Scene): Promise<{ playerMesh: AbstractMesh; animations: Animations } | null> => {
+export const createPlayerModel = async (scene: Scene, playerId?: string): Promise<{ playerMesh: AbstractMesh; animations: Animations } | null> => {
     try {
         const { getAssetUrl } = useSupabase();
         const modelUrl = getAssetUrl("models", "newCharacterModel.glb");
@@ -28,13 +28,19 @@ export const createPlayerModel = async (scene: Scene): Promise<{ playerMesh: Abs
             }
         );
 
-        // Add meshes to scene
+        // Use name if provided
+        // TODO: Get name from Start Screem input
+        const uniqueId = playerId || `player_${Date.now()}`;
+        
+        // Add meshes to scene with unique names
         modelContainer.meshes.forEach(mesh => {
+            mesh.name = `${mesh.name}_${uniqueId}`;
             scene.addMesh(mesh);
         });
 
         // Add animation groups to scene
         modelContainer.animationGroups.forEach(group => {
+            group.name = `${group.name}_${uniqueId}`;
             if (scene.animationGroups.find(g => g.name === group.name)) {
                 scene.removeAnimationGroup(group);
             }
@@ -42,7 +48,7 @@ export const createPlayerModel = async (scene: Scene): Promise<{ playerMesh: Abs
         });
 
         // Get player mesh
-        const playerMesh = scene.getMeshByName("characterMedium") as AbstractMesh;
+        const playerMesh = scene.getMeshByName(`characterMedium_${uniqueId}`) as AbstractMesh;
         if (!playerMesh) {
             console.error("CreatePlayer: Player mesh not found");
             return null;
@@ -50,16 +56,16 @@ export const createPlayerModel = async (scene: Scene): Promise<{ playerMesh: Abs
 
         // Setup animations
         const animations: Animations = {
-            tpose: scene.getAnimationGroupByName("t-pose") as AnimationGroup,
-            idle: scene.getAnimationGroupByName("idle") as AnimationGroup,
-            run: scene.getAnimationGroupByName("run") as AnimationGroup,
-            jump: scene.getAnimationGroupByName("jump") as AnimationGroup,
-            jumpUp: scene.getAnimationGroupByName("jumpUp") as AnimationGroup,
-            punch: scene.getAnimationGroupByName("punch1") as AnimationGroup,
-            bigPunch: scene.getAnimationGroupByName("punch2") as AnimationGroup,
-            getHit: scene.getAnimationGroupByName("hit") as AnimationGroup,
-            death: scene.getAnimationGroupByName("death") as AnimationGroup,
-            victory: scene.getAnimationGroupByName("dance") as AnimationGroup,
+            tpose: scene.getAnimationGroupByName(`t-pose_${uniqueId}`) as AnimationGroup,
+            idle: scene.getAnimationGroupByName(`idle_${uniqueId}`) as AnimationGroup,
+            run: scene.getAnimationGroupByName(`run_${uniqueId}`) as AnimationGroup,
+            jump: scene.getAnimationGroupByName(`jump_${uniqueId}`) as AnimationGroup,
+            jumpUp: scene.getAnimationGroupByName(`jumpUp_${uniqueId}`) as AnimationGroup,
+            punch: scene.getAnimationGroupByName(`punch1_${uniqueId}`) as AnimationGroup,
+            bigPunch: scene.getAnimationGroupByName(`punch2_${uniqueId}`) as AnimationGroup,
+            getHit: scene.getAnimationGroupByName(`hit_${uniqueId}`) as AnimationGroup,
+            death: scene.getAnimationGroupByName(`death_${uniqueId}`) as AnimationGroup,
+            victory: scene.getAnimationGroupByName(`dance_${uniqueId}`) as AnimationGroup,
         };
 
         // Start with idle animation

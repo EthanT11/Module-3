@@ -6,7 +6,7 @@ import { SCENE_CONFIG } from "../config";
 // import { PlayerStateManager } from "../player/PlayerState";
 // import loadMap from "../map/loadMap";
 // import { GameHUD } from "./game_hud/GameHUD";
-import { useRoomContext } from "../../context/RoomContext";
+import { useRoomContext } from "../../contexts/RoomContext";
 import { useNavigate } from "react-router";
 import { createGround } from "../map/map_objects";
 import { setupMultiplayer } from "../../networking/setupMultiplayer";
@@ -14,12 +14,13 @@ import { createPlayerModel } from "./createPlayerModel";
 import { createCamera } from "./createCamera";
 import { setupMovement } from "./handleMovement";
 import { setupCombat } from "./handleCombat";
+import { handleMultiplayer } from "./handleMultiplayer";
 // https://kenney.nl/assets/animated-characters-2
 // mixamo
 
 const CreateLobby = (): JSX.Element => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
-    // const { room, isHost } = useRoomContext();
+    const { room } = useRoomContext();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -51,6 +52,11 @@ const CreateLobby = (): JSX.Element => {
                     return;
                 }
                 const { playerMesh, animations } = playerResult;
+                if (room) {
+                    handleMultiplayer(scene, room, playerMesh);
+                } else {
+                    console.log("CreateLobby: No room found, unable to setup multiplayer");
+                }
 
                 // Setup camera
                 const camera = createCamera(playerMesh, scene);
@@ -59,6 +65,7 @@ const CreateLobby = (): JSX.Element => {
                 const movementState = setupMovement(scene, playerMesh, animations);
                 // NOTE: Just factored out to clean up the code
                 setupCombat(scene, animations, movementState);
+
 
                 // Setup scene lighting and ground
                 const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);

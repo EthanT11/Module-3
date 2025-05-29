@@ -5,7 +5,7 @@ import './index.css'
 import App from './App.js'
 import MainMenuScreen from './game/menu/MainMenuScreen'
 import CreateGameEnvironment from './game/CreateGameEnvironment'
-import { RoomProvider } from './context/RoomContext'
+import { RoomProvider } from './contexts/RoomContext'
 import CreateLobby from './game/lobby/CreateLobby'
 
 createRoot(document.getElementById('root')!).render(

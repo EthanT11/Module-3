@@ -9,7 +9,7 @@ import { createPlayer } from "../player/createPlayer";
 import { PlayerStateManager } from "../player/PlayerState";
 import loadMap from "../map/loadMap";
 // import { GameHUD } from "./game_hud/GameHUD";
-import { useRoomContext } from "../../context/RoomContext";
+import { useRoomContext } from "../../contexts/RoomContext";
 import { useNavigate } from "react-router";
 
 const CreateLobby = (): JSX.Element => {

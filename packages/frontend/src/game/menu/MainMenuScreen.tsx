@@ -5,7 +5,7 @@ import { createMenuEnvironment } from "./utility/createMenuEnvironment";
 import { createRoomMenuUI } from "./room_menu/drawRoomMenuUI";
 import { drawStartMenuUI } from "./start_menu/drawStartMenuUI";
 import { useNavigate } from "react-router";
-import { useRoomContext } from "../../context/RoomContext";
+import { useRoomContext } from "../../contexts/RoomContext";
 
 interface MenuEnvironment {
   engine: Engine;
