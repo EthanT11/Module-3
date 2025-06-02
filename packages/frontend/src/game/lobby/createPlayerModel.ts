@@ -48,9 +48,10 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
         });
 
         // Get player mesh
-        const playerMesh = scene.getMeshByName(`characterMedium_${uniqueId}`) as AbstractMesh;
+        const meshId = `characterMedium_${uniqueId}`;
+        const playerMesh = scene.getMeshByName(meshId) as AbstractMesh;
         if (!playerMesh) {
-            console.error("CreatePlayer: Player mesh not found");
+            console.error("CreatePlayer: Player mesh not found with id: ", meshId);
             return null;
         }
 

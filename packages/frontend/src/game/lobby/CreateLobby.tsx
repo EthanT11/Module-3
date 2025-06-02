@@ -9,19 +9,20 @@ import { SCENE_CONFIG } from "../config";
 import { useRoomContext } from "../../contexts/RoomContext";
 import { useNavigate } from "react-router";
 import { createGround } from "../map/map_objects";
-import { setupMultiplayer } from "../../networking/setupMultiplayer";
 import { createPlayerModel } from "./createPlayerModel";
 import { createCamera } from "./createCamera";
 import { setupMovement } from "./handleMovement";
 import { setupCombat } from "./handleCombat";
 import { handleMultiplayer } from "./handleMultiplayer";
 import { AnimationHandler } from "./handleAnimations";
+import { PlayerState } from "./PlayerState";
+
 // https://kenney.nl/assets/animated-characters-2
 // mixamo
 
 const CreateLobby = (): JSX.Element => {
     const reactCanvas = useRef(null); // Use useRef to store the canvas element
-    const { room } = useRoomContext();
+    const { room, isHost } = useRoomContext();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -44,29 +45,44 @@ const CreateLobby = (): JSX.Element => {
             engine.loadingScreen.loadingUIBackgroundColor = "black";
 
             try {
+                // Setup scene
                 const scene = await setupScene(engine);
                 
-                // Create player and get mesh with animations
+                // Initialize player state
+                const playerId = room?.sessionId;
+                if (!playerId) {
+                    throw new Error("CreateLobby: No player ID found");
+                }
+                const playerState = new PlayerState(playerId, isHost);
+                
+                // Create player model
                 const playerResult = await createPlayerModel(scene);
                 if (!playerResult) {
-                    console.error("CreateLobby: Failed to create player");
-                    return;
+                    throw new Error("CreateLobby: Failed to create player");
                 }
                 const { playerMesh, animations } = playerResult;
+                playerState.setMesh(playerMesh);
+
+                // Create and Attach Camera to playerMesh
+                createCamera(playerMesh, scene);
+                
+                // Setup player controls and interactions
+                const animationHandler = new AnimationHandler(scene, animations);
+                playerState.setAnimationHandler(animationHandler);
+
+                const movementState = setupMovement(scene, playerState);
+                if (!movementState) {
+                    throw new Error("CreateLobby: Failed to setup movement");
+                }
+                playerState.setMovementState(movementState);
+
+                setupCombat(scene, playerState);
+                
                 if (room) {
                     handleMultiplayer(scene, room, playerMesh);
                 } else {
                     console.log("CreateLobby: No room found, unable to setup multiplayer");
                 }
-
-                // Setup camera
-                const camera = createCamera(playerMesh, scene);
-
-                // Setup player controls and interactions
-                const animationHandler = new AnimationHandler(scene, animations);
-                const movementState = setupMovement(scene, playerMesh, animationHandler);
-                setupCombat(scene, animationHandler, movementState);
-
 
                 // Setup scene lighting and ground
                 const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);

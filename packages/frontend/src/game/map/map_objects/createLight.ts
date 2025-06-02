@@ -6,7 +6,7 @@ const createLight = (scene: Scene): HemisphericLight => {
         const light = new HemisphericLight("light", MAP_CONFIG.LIGHT_CONFIG.position, scene);
         light.intensity = MAP_CONFIG.LIGHT_CONFIG.intensity;
 
-        console.log("Light setup complete");
+        // console.log("Light setup complete");
         return light;
     } catch (error) {
         console.error("Error setting up light:", error);

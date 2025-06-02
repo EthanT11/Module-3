@@ -87,9 +87,9 @@ const generateMaze = () => {
 
     // Place start and goal
     generatedMaze[start.y][start.x] = 3;
-    console.log("Start:", start);
+    // console.log("Start:", start);
     generatedMaze[goal.y][goal.x] = 4;
-    console.log("Goal:", goal);
+    // console.log("Goal:", goal);
 
     return generatedMaze;
 };

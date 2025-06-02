@@ -8,13 +8,13 @@ const fillMap = (map: number[][], scene: Scene) => {
     const groundWidth = MAP_CONFIG.GROUND_CONFIG.width; // 100
     const groundHeight = MAP_CONFIG.GROUND_CONFIG.height; // 100
     
-    console.log("Ground Positions: ", groundWidth, groundHeight);
+    // console.log("Ground Positions: ", groundWidth, groundHeight);
     
     // Calculate cell dimensions | This gets the width and height of each cell in the map based on the ground size so it can scale to different ground sizes
     const cellWidth = groundWidth / map[0].length;
     const cellDepth = groundHeight / map.length;
 
-    console.log("Cell Dimensions: ", cellWidth, cellDepth);
+    // console.log("Cell Dimensions: ", cellWidth, cellDepth);
 
     let wallHeight: number;
     for (let i = 0; i < map.length; i++) {
@@ -34,10 +34,10 @@ const fillMap = (map: number[][], scene: Scene) => {
                 createPlatform(x, 0, z, scene);
             }
             if (map[i][j] === 3) { // Start Point
-                console.log("=== Start Point Creation ===");
-                console.log("Maze indices (i,j):", i, j);
-                console.log("Calculated world position (x,z):", x, z);
-                console.log("Ground bounds:", -groundWidth/2, "to", groundWidth/2);
+                // console.log("=== Start Point Creation ===");
+                // console.log("Maze indices (i,j):", i, j);
+                // console.log("Calculated world position (x,z):", x, z);
+                // console.log("Ground bounds:", -groundWidth/2, "to", groundWidth/2);
 
                 const startPoint = MeshBuilder.CreateSphere("startPoint", { diameter: 1 }, scene);
                 const startPointMaterial = new StandardMaterial("startPoint", scene);
@@ -53,10 +53,10 @@ const fillMap = (map: number[][], scene: Scene) => {
                 // console.log("Start point created at", x, z);
             }
             if (map[i][j] === 4) { // Goal
-                console.log("=== Goal Creation ===");
-                console.log("Maze indices (i,j):", i, j);
-                console.log("Calculated world position (x,z):", x, z);
-                console.log("Ground bounds:", -groundWidth/2, "to", groundWidth/2);
+                // console.log("=== Goal Creation ===");
+                // console.log("Maze indices (i,j):", i, j);
+                // console.log("Calculated world position (x,z):", x, z);
+                // console.log("Ground bounds:", -groundWidth/2, "to", groundWidth/2);
                 
                 const goal = MeshBuilder.CreateSphere("goal", { diameter: 2 }, scene);
                 const goalMaterial = new StandardMaterial("goal", scene);
@@ -67,7 +67,7 @@ const fillMap = (map: number[][], scene: Scene) => {
                 goal.checkCollisions = true;
                 
                 goal.position.set(x, 1, z);
-                console.log("Final goal position:", goal.position);
+                // console.log("Final goal position:", goal.position);
             }
         }
     }

@@ -1,8 +1,6 @@
-import { Scene, Vector3, AbstractMesh } from "@babylonjs/core";
-import { Animations } from "./createPlayerModel";
+import { Scene, Vector3 } from "@babylonjs/core";
 import { handleRotation } from "./handleRotation";
-import { AnimationHandler } from "./handleAnimations";
-
+import { PlayerState } from "./PlayerState";
 export interface MovementState {
     keys: { w: boolean; a: boolean; s: boolean; d: boolean };
     wasMoving: boolean;
@@ -31,8 +29,7 @@ const DIRECTION_MAP = {
 // The keys are stored in a state object
 export const setupMovement = (
     scene: Scene,
-    playerMesh: AbstractMesh,
-    animationHandler: AnimationHandler
+    playerState: PlayerState
 ) => {
 
     // Init movement state 
@@ -43,6 +40,11 @@ export const setupMovement = (
         isBigPunching: false
     };
 
+    const playerMesh = playerState.getMesh();
+    if (!playerMesh) {
+        console.error("Player mesh not found: handleMovement");
+        return;
+    }
     // Setup mesh rotation
     handleRotation(scene, playerMesh);
 
@@ -56,8 +58,6 @@ export const setupMovement = (
 
     // Movement and animation update
     scene.onBeforeRenderObservable.add(() => {
-        if (!playerMesh) return;
-        
         // We create a vec3 to store the movement
         // We take the angle of the player mesh to know where to move
         const move = new Vector3(0, 0, 0);
@@ -83,7 +83,7 @@ export const setupMovement = (
         }
 
         // Animation switching | pass the isMoving state to the animation handler
-        animationHandler.handleMovement(isMoving);
+        playerState.getAnimationHandler()?.handleMovement(isMoving);
     });
 
     return state;
