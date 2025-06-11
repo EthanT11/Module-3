@@ -10,6 +10,7 @@ export interface IPlayerState {
     rotationY: number;
 
     animationHandler?: AnimationHandler;
+    movementState?: MovementState;
 }
 
 export class PlayerState implements IPlayerState {
@@ -30,14 +31,10 @@ export class PlayerState implements IPlayerState {
         this.position = new Vector3(0, 0, 0); // TODO: Get position from server
         this.rotationY = 0; // TODO: Get rotation from server
     }
-    
+
     // Setters
     setMesh(mesh: AbstractMesh) {
         this.mesh = mesh;
-    }
-
-    setPosition(position: Vector3) {
-        this.position = position;
     }
 
     setRotationY(rotationY: number) {
@@ -64,7 +61,12 @@ export class PlayerState implements IPlayerState {
     getMesh() {
         return this.mesh;
     }
-    
-    
-    
+
+    getPosition() {
+        return this.position;
+    }
+
+    getRotationY() {
+        return this.rotationY;
+    }
 }

@@ -4,8 +4,8 @@ import { MyRoomState } from "../../../../backend-colyseus/src/rooms/schema/MyRoo
 import { createPlayerModel } from "./createPlayerModel";
 import { AnimationHandler } from "./handleAnimations";
 
-const playerMeshes = new Map<string, AbstractMesh>();
-const playerAnimations = new Map<string, AnimationHandler>();
+export const playerMeshes = new Map<string, AbstractMesh>();
+export const playerAnimations = new Map<string, AnimationHandler>();
 
 export const handleMultiplayer = (
     scene: Scene,
@@ -32,7 +32,7 @@ export const handleMultiplayer = (
         if (isLocalPlayer) return;
 
         // Create a model for remote players
-        const playerResult = await createPlayerModel(scene);
+        const playerResult = await createPlayerModel(scene, sessionId);
         if (!playerResult) {
             console.error("CreateLobby: Failed to create player");
             return;
@@ -94,7 +94,7 @@ export const handleMultiplayer = (
 
     // Send local player position updates
     let lastUpdateTime = 0;
-    const UPDATE_INTERVAL = 100; // Update every 100ms, lower is smoother BUT may cause lag
+    const UPDATE_INTERVAL = 1; // Update every 100ms, lower is smoother BUT may cause lag
 
     scene.onBeforeRenderObservable.add(() => {
         if (playerMesh) {

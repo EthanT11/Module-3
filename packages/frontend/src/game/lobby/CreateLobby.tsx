@@ -1,4 +1,4 @@
-import { Engine, Vector3, HemisphericLight } from "@babylonjs/core"
+import { Engine, Vector3, HemisphericLight, CreateGround, StandardMaterial, Color3 } from "@babylonjs/core"
 import { useRef, useEffect } from "react"
 // import { setupMultiplayer } from "../../networking/setupMultiplayer";
 import { setupScene } from "../setupScene";
@@ -8,7 +8,7 @@ import { SCENE_CONFIG } from "../config";
 // import { GameHUD } from "./game_hud/GameHUD";
 import { useRoomContext } from "../../contexts/RoomContext";
 import { useNavigate } from "react-router";
-import { createGround } from "../map/map_objects";
+import { createWall } from "../map/map_objects";
 import { createPlayerModel } from "./createPlayerModel";
 import { createCamera } from "./createCamera";
 import { setupMovement } from "./handleMovement";
@@ -56,7 +56,7 @@ const CreateLobby = (): JSX.Element => {
                 const playerState = new PlayerState(playerId, isHost);
                 
                 // Create player model
-                const playerResult = await createPlayerModel(scene);
+                const playerResult = await createPlayerModel(scene, playerId);
                 if (!playerResult) {
                     throw new Error("CreateLobby: Failed to create player");
                 }
@@ -87,8 +87,21 @@ const CreateLobby = (): JSX.Element => {
                 // Setup scene lighting and ground
                 const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
                 light.intensity = 0.5;
-                const ground = createGround(scene, 1000, 1000);
+                const groundOptions = {
+                    width: 1000,
+                    height: 1000,
+                    subdivisions: 10,
+                    subdivisionsX: 10,
+                }   
+                const ground = CreateGround("ground", groundOptions, scene);
                 ground.position.y = 0;
+                const groundMaterial = new StandardMaterial("groundMaterial", scene);
+                groundMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
+                ground.material = groundMaterial;
+
+                const wall = createWall(10, 10, 10, 10, 10, scene);
+                wall.position.y = 0;
+                wall.showBoundingBox = true;
 
                 // Start rendering
                 scene.executeWhenReady(() => {
