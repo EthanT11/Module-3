@@ -10,7 +10,7 @@ export interface Animations {
     jumpUp: AnimationGroup;
     punch: AnimationGroup;
     bigPunch: AnimationGroup;
-    getHit: AnimationGroup;
+    hit: AnimationGroup;
     death: AnimationGroup;
     victory: AnimationGroup;
 }
@@ -40,6 +40,7 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
 
         // Add animation groups to scene
         modelContainer.animationGroups.forEach(group => {
+            console.log("Animation group: ", group.name);
             group.name = `${group.name}_${uniqueId}`;
             if (scene.animationGroups.find(g => g.name === group.name)) {
                 scene.removeAnimationGroup(group);
@@ -64,7 +65,7 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
             jumpUp: scene.getAnimationGroupByName(`jumpUp_${uniqueId}`) as AnimationGroup,
             punch: scene.getAnimationGroupByName(`punch1_${uniqueId}`) as AnimationGroup,
             bigPunch: scene.getAnimationGroupByName(`punch2_${uniqueId}`) as AnimationGroup,
-            getHit: scene.getAnimationGroupByName(`hit_${uniqueId}`) as AnimationGroup,
+            hit: scene.getAnimationGroupByName(`hit_${uniqueId}`) as AnimationGroup,
             death: scene.getAnimationGroupByName(`death_${uniqueId}`) as AnimationGroup,
             victory: scene.getAnimationGroupByName(`dance_${uniqueId}`) as AnimationGroup,
         };

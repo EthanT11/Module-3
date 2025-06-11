@@ -1,6 +1,7 @@
 import { Scene, PointerEventTypes, AbstractMesh, Vector3, Ray, RayHelper, FollowCamera, Color3, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { PlayerState } from "./PlayerState";
 import { playerMeshes } from "./handleMultiplayer";
+import { Room } from "colyseus.js";
 
 // Constants
 const DEBUG_TIMER = 500;
@@ -10,10 +11,11 @@ const RAY_LENGTH = 4;
 const OFFSET = 1;
 const HITBOX_SIZE = new Vector3(2, 2, 2);
 const HITBOX_DISTANCE = 2;
+const HIT_DAMAGE = 10;
 
-interface CombatState {
-    isPunching: boolean;
-    isBigPunching: boolean;
+const sendHit = (room: Room, hitPlayer: string, damage: number) => {
+    console.log(`Sending hit to player: ${hitPlayer} with damage: ${damage}`);
+    room.send("hit", { hitPlayer, damage });
 }
 
 // Creates a ray shooting forward from the player
@@ -46,21 +48,33 @@ const createHitbox = (scene: Scene, origin: Vector3, forward: Vector3, playerRot
     return hitBox;
 };
 
-const checkIntersections = (hitBox: AbstractMesh, playerMeshes: Map<string, AbstractMesh>): void => {
+// Check for intersections between the hitbox and the player meshes
+const checkIntersections = (hitBox: AbstractMesh, playerMeshes: Map<string, AbstractMesh>): string | null => {
+    let hitPlayer: string | null = null;
     playerMeshes.forEach((mesh, sessionId) => {
         if (mesh === hitBox) return;
+
+        // Get updated position of hitbox
+        hitBox.getAbsolutePosition();
+
         const intersects = hitBox.intersectsMesh(mesh, true);
         if (intersects) {
-            console.log(`Hit detected on player (hit box): ${sessionId}`);
+            // console.log(`Hit detected on player (hit box): ${sessionId}`);
+            hitPlayer = sessionId;
         }
     });
+
+    return hitPlayer;
 };
 
-const handlePunch = (scene: Scene, localPlayerMesh: AbstractMesh) => {
+const handlePunch = (scene: Scene, localPlayerMesh: AbstractMesh, room: Room) => {
     if (!localPlayerMesh) {
         console.error("Combat: No mesh found");
         return;
     }
+
+    // Send punch animation to other players
+    room.send("punch", { playerId: room.sessionId });
 
     // Create ray
     const ray = createRay(localPlayerMesh);
@@ -76,7 +90,10 @@ const handlePunch = (scene: Scene, localPlayerMesh: AbstractMesh) => {
     const hitBox = createHitbox(scene, ray.origin, ray.direction, localPlayerMesh.rotation);
 
     // Check intersection with all remote player meshes
-    checkIntersections(hitBox, playerMeshes);
+    const hitPlayer = checkIntersections(hitBox, playerMeshes);
+    if (hitPlayer) {
+        sendHit(room, hitPlayer, HIT_DAMAGE);
+    }
 
     // Clean up hit box
     setTimeout(() => hitBox.dispose(), 500);
@@ -85,7 +102,8 @@ const handlePunch = (scene: Scene, localPlayerMesh: AbstractMesh) => {
 
 export const setupCombat = (
     scene: Scene,
-    playerState: PlayerState
+    playerState: PlayerState,
+    room: Room
 ) => {
     scene.onPointerObservable.add((pointerInfo) => {
         const animationHandler = playerState.getAnimationHandler();
@@ -109,12 +127,12 @@ export const setupCombat = (
                 // left click - normal punch
                 animationHandler.handlePunch(true);
                 movementState.isPunching = true;
-                handlePunch(scene, playerState.getMesh()!);
+                handlePunch(scene, playerState.getMesh()!, room);
             } else if (pointerInfo.event.button === 2) {
                 // right click - big punch
                 animationHandler.handleBigPunch(true);
                 movementState.isBigPunching = true;
-                handlePunch(scene, playerState.getMesh()!);
+                handlePunch(scene, playerState.getMesh()!, room);
             }
         } else if (pointerInfo.type === PointerEventTypes.POINTERUP) {
             if (pointerInfo.event.button === 0) {

@@ -9,7 +9,7 @@ export enum PlayerAnimation {
     // JUMP_UP = "jumpUp",
     PUNCH = "punch",
     BIG_PUNCH = "bigPunch",
-    // GET_HIT = "getHit",
+    HIT = "hit",
     // DEATH = "death",
     VICTORY = "victory"
 }
@@ -19,6 +19,7 @@ export interface AnimationState {
     isPunching: boolean;
     isBigPunching: boolean;
     wasMoving: boolean;
+    isHit: boolean;
 }
 
 export class AnimationHandler {
@@ -34,7 +35,8 @@ export class AnimationHandler {
             currentAnimation: PlayerAnimation.IDLE,
             isPunching: false,
             isBigPunching: false,
-            wasMoving: false
+            wasMoving: false,
+            isHit: false
         };
 
         // Start with idle animation
@@ -94,6 +96,22 @@ export class AnimationHandler {
             this.state.isBigPunching = false;
             if (this.animations.bigPunch) {
                 this.animations.bigPunch.stop();
+            }
+        }
+    }
+
+    public handleHit(isHit: boolean) {
+        if (isHit && !this.state.isHit) {
+            this.state.isHit = true;
+            if (this.animations.hit) {
+                this.animations.hit.from = 0;
+                this.animations.hit.to = 30; // Adjust based on your hit animation length
+                this.animations.hit.play(false);
+            }
+        } else if (!isHit && this.state.isHit) {
+            this.state.isHit = false;
+            if (this.animations.hit) {
+                this.animations.hit.stop();
             }
         }
     }

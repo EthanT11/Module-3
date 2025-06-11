@@ -52,6 +52,27 @@ export class MyRoom extends Room<MyRoomState> {
       console.log("Sent map state to client: ", client.sessionId);
     });
 
+    // Handle hit notifications
+    this.onMessage("hit", (client, message): void => {
+      console.log("Hit received: ", message);
+      const player = this.state.players.get(message.hitPlayer);
+      if (!player) return;
+      player.health -= message.damage;
+      console.log("Player health: ", player.health);
+      if (player.health <= 0) {
+        player.isDead = true;
+        console.log("Player is dead: ", player.isDead);
+      }
+      // Broadcast the hit message to all clients
+      this.broadcast("hit", message);
+    });
+
+    // Handle punch animations
+    this.onMessage("punch", (client, message): void => {
+      // Broadcast the punch message to all clients except the sender
+      this.broadcast("punch", message, { except: client });
+    });
+
     // Catch playground message types |
     this.onMessage("_playground_message_types", (client, message) => {
       console.log("Playground Message: ", message, "From: ", client.sessionId);

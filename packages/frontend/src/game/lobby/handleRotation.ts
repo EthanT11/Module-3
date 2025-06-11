@@ -1,9 +1,10 @@
 import { Scene, PointerEventTypes, AbstractMesh } from "@babylonjs/core";
+import { PlayerState } from "./PlayerState";
 
 // Mouse sensitivity
 const MOUSE_SENSITIVITY = 0.003;
 
-export const handleRotation = (scene: Scene, playerMesh: AbstractMesh) => {
+export const handleRotation = (scene: Scene, playerMesh: AbstractMesh, playerState: PlayerState) => {
     scene.onPointerObservable.add((pointerInfo) => {
         if (pointerInfo.type === PointerEventTypes.POINTERMOVE && document.pointerLockElement) {
             // deltaX is the amount of movement on the X axis
@@ -12,6 +13,8 @@ export const handleRotation = (scene: Scene, playerMesh: AbstractMesh) => {
             const playerRotationY = playerMesh.rotation.y - deltaX * MOUSE_SENSITIVITY;
             // Normalize rotation
             playerMesh.rotation.y = (playerRotationY + Math.PI * 2) % (Math.PI * 2);
+            // Update player state rotation
+            playerState.setRotationY(playerMesh.rotation.y);
         } 
     });
 }; 

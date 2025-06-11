@@ -62,6 +62,7 @@ const CreateLobby = (): JSX.Element => {
                 }
                 const { playerMesh, animations } = playerResult;
                 playerState.setMesh(playerMesh);
+                playerState.setPosition();
 
                 // Create and Attach Camera to playerMesh
                 createCamera(playerMesh, scene);
@@ -76,10 +77,10 @@ const CreateLobby = (): JSX.Element => {
                 }
                 playerState.setMovementState(movementState);
 
-                setupCombat(scene, playerState);
+                setupCombat(scene, playerState, room);
                 
                 if (room) {
-                    handleMultiplayer(scene, room, playerMesh);
+                    handleMultiplayer(scene, room, playerState);
                 } else {
                     console.log("CreateLobby: No room found, unable to setup multiplayer");
                 }

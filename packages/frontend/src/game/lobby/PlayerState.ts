@@ -5,31 +5,42 @@ import { MovementState } from "./handleMovement";
 export interface IPlayerState {
     sessionId: string;
     isHost: boolean;
-    mesh?: AbstractMesh;
     position: Vector3;
     rotationY: number;
-
+    
+    mesh?: AbstractMesh;
     animationHandler?: AnimationHandler;
     movementState?: MovementState;
+
+    health: number;
+    maxHealth: number;
 }
 
 export class PlayerState implements IPlayerState {
     sessionId: string;
     isHost: boolean;
-
-    mesh?: AbstractMesh;
     position: Vector3;
     rotationY: number;
-
+    
+    mesh?: AbstractMesh;
     animationHandler?: AnimationHandler;
-
     movementState?: MovementState;
 
+    health: number;
+    maxHealth: number;
+    isHit: boolean;
+
     constructor(sessionId: string, isHost: boolean) {
+        // Position
         this.sessionId = sessionId;
         this.isHost = isHost;
         this.position = new Vector3(0, 0, 0); // TODO: Get position from server
         this.rotationY = 0; // TODO: Get rotation from server
+
+        // Combat
+        this.health = 100;
+        this.maxHealth = 100;
+        this.isHit = false;
     }
 
     // Setters
@@ -41,12 +52,43 @@ export class PlayerState implements IPlayerState {
         this.rotationY = rotationY;
     }
 
+    setPosition(position?: Vector3) {
+        if (this.mesh) {
+            this.position = this.mesh.getAbsolutePosition();
+        } else if (position) {
+            this.position = position;
+        } else {
+            console.error("PlayerState: No mesh or position provided");
+        }
+    }
+
     setAnimationHandler(animationHandler: AnimationHandler) {
         this.animationHandler = animationHandler;
     }
 
     setMovementState(movementState: MovementState) {
         this.movementState = movementState;
+    }
+
+    setHealth(health: number) {
+        this.health = health;
+    }
+
+    getHealth() {
+        return this.health;
+    }
+
+    setIsHit(isHit: boolean) {
+        this.isHit = isHit;
+        if (isHit) {
+            this.animationHandler?.handleHit(true);
+        } else {
+            this.animationHandler?.handleHit(false);
+        }
+    }
+
+    getIsHit() {
+        return this.isHit;
     }
 
     // Getters

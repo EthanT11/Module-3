@@ -2,27 +2,83 @@ import { Scene, AbstractMesh } from "@babylonjs/core";
 import { Room } from "colyseus.js";
 import { MyRoomState } from "../../../../backend-colyseus/src/rooms/schema/MyRoomState";
 import { createPlayerModel } from "./createPlayerModel";
-import { AnimationHandler } from "./handleAnimations";
+import { AnimationHandler, PlayerAnimation } from "./handleAnimations";
+import { PlayerState } from "./PlayerState";
 
 export const playerMeshes = new Map<string, AbstractMesh>();
+export const remotePlayerStates = new Map<string, PlayerState>();
 export const playerAnimations = new Map<string, AnimationHandler>();
+
+const sendLocalPlayerPosition = (room: Room, playerState: PlayerState) => {
+    const localPlayerPosition = playerState.getPosition();
+    const localPlayerRotationY = playerState.getRotationY();
+    
+    room.send("updatePosition", {
+        x: localPlayerPosition.x,
+        y: localPlayerPosition.y,
+        z: localPlayerPosition.z,
+        rotationY: localPlayerRotationY
+    });
+};
 
 export const handleMultiplayer = (
     scene: Scene,
     room: Room,
-    playerMesh: AbstractMesh
+    playerState: PlayerState
 ) => {
     if (!room) return;
 
     let roomState: MyRoomState;
     roomState = room.state;
 
-    // Send initial position when joining
-    room.send("updatePosition", {
-        x: playerMesh.position.x,
-        y: playerMesh.position.y,
-        z: playerMesh.position.z,
-        rotationY: playerMesh.rotation.y
+    // Send local player position to server
+    sendLocalPlayerPosition(room, playerState);
+
+    // Handle hit notifications
+    room.onMessage("hit", (message) => {
+        console.log("Hit received: ", message);
+        // If the hit player is the local player
+        if (message.hitPlayer === room.sessionId) {
+            console.log(`You were hit for ${message.damage} damage!`);
+            playerState.setHealth(playerState.getHealth() - message.damage);
+            console.log(`Your health is now ${playerState.getHealth()}`);
+            
+            // Play hit animation
+            const animationHandler = playerState.getAnimationHandler();
+            if (animationHandler) {
+                animationHandler.handleHit(true);
+                // Reset hit state after animation
+                setTimeout(() => {
+                    animationHandler.handleHit(false);
+                }, 1000); // Adjust timing based on your hit animation length
+            }
+        } else {
+            // If the hit player is a remote player
+            const remotePlayerMesh = playerMeshes.get(message.hitPlayer);
+            if (remotePlayerMesh) {
+                const remotePlayerAnimationHandler = playerAnimations.get(message.hitPlayer);
+                if (remotePlayerAnimationHandler) {
+                    remotePlayerAnimationHandler.handleHit(true);
+                    // Reset hit state after animation
+                    setTimeout(() => {
+                        remotePlayerAnimationHandler.handleHit(false);
+                    }, 1000); 
+                }
+            }
+        }
+    });
+
+    // Handle punch animations from remote players
+    room.onMessage("punch", (message) => {
+        console.log("Punch received: ", message);
+        const remotePlayerAnimationHandler = playerAnimations.get(message.playerId);
+        if (remotePlayerAnimationHandler) {
+            remotePlayerAnimationHandler.handlePunch(true);
+            // Reset punch state after animation completes
+            setTimeout(() => {
+                remotePlayerAnimationHandler.handlePunch(false);
+            }, 1000);
+        }
     });
 
     // When a player joins the room
@@ -38,8 +94,6 @@ export const handleMultiplayer = (
             return;
         }
         const { playerMesh: remoteMesh, animations: remoteAnimations } = playerResult;
-        playerMesh.showBoundingBox = true;
-        remoteMesh.showBoundingBox = true;
         
         // Store remote player mesh in map
         playerMeshes.set(sessionId, remoteMesh);
@@ -48,7 +102,6 @@ export const handleMultiplayer = (
         const animationHandler = new AnimationHandler(scene, remoteAnimations);
         playerAnimations.set(sessionId, animationHandler);
         
-
         // Set initial position
         remoteMesh.position.set(player.x, player.y, player.z);
         remoteMesh.rotation.y = player.rotationY;
@@ -97,18 +150,11 @@ export const handleMultiplayer = (
     const UPDATE_INTERVAL = 1; // Update every 100ms, lower is smoother BUT may cause lag
 
     scene.onBeforeRenderObservable.add(() => {
-        if (playerMesh) {
-            const currentTime = Date.now();
-            // Check if the current time minus the last update time is greater than the update interval
-            if (currentTime - lastUpdateTime >= UPDATE_INTERVAL) {
-                room.send("updatePosition", {
-                    x: playerMesh.position.x,
-                    y: playerMesh.position.y,
-                    z: playerMesh.position.z,
-                    rotationY: playerMesh.rotation.y
-                });
-                lastUpdateTime = currentTime;
-            }
+        const currentTime = Date.now();
+        // Check if the current time minus the last update time is greater than the update interval
+        if (currentTime - lastUpdateTime >= UPDATE_INTERVAL) {
+            sendLocalPlayerPosition(room, playerState);
+            lastUpdateTime = currentTime;
         }
     });
 };

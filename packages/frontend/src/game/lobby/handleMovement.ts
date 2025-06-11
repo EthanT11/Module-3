@@ -46,7 +46,7 @@ export const setupMovement = (
         return;
     }
     // Setup mesh rotation
-    handleRotation(scene, playerMesh);
+    handleRotation(scene, playerMesh, playerState);
 
     // Keyboard input handling
     scene.onKeyboardObservable.add((kb) => {
@@ -82,6 +82,8 @@ export const setupMovement = (
             playerMesh.position.addInPlace(move);
         }
 
+        // Update player state position
+        playerState.setPosition(playerMesh.position);
         // Animation switching | pass the isMoving state to the animation handler
         playerState.getAnimationHandler()?.handleMovement(isMoving);
     });
