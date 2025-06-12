@@ -50,7 +50,7 @@ export const handleMultiplayer = (
                 // Reset hit state after animation
                 setTimeout(() => {
                     animationHandler.handleHit(false);
-                }, 1000); // Adjust timing based on your hit animation length
+                }, 500); // Adjust timing based on your hit animation length
             }
         } else {
             // If the hit player is a remote player
@@ -133,8 +133,16 @@ export const handleMultiplayer = (
             const animationHandler = playerAnimations.get(sessionId);
             
             if (remoteMesh) {
+                // Update the mesh position
                 remoteMesh.position.set(player.x, player.y, player.z);
                 remoteMesh.rotation.y = player.rotationY;
+
+                // Update the player state if it exists
+                const remotePlayerState = remotePlayerStates.get(sessionId);
+                if (remotePlayerState) {
+                    remotePlayerState.updatePosition(player.x, player.y, player.z);
+                    remotePlayerState.setRotationY(player.rotationY);
+                }
 
                 // Handle remote player movement animation
                 if (animationHandler) {
@@ -147,7 +155,7 @@ export const handleMultiplayer = (
 
     // Send local player position updates
     let lastUpdateTime = 0;
-    const UPDATE_INTERVAL = 1; // Update every 100ms, lower is smoother BUT may cause lag
+    const UPDATE_INTERVAL = 50;
 
     scene.onBeforeRenderObservable.add(() => {
         const currentTime = Date.now();

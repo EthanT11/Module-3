@@ -53,12 +53,22 @@ export class PlayerState implements IPlayerState {
     }
 
     setPosition(position?: Vector3) {
-        if (this.mesh) {
-            this.position = this.mesh.getAbsolutePosition();
-        } else if (position) {
+        if (position) {
             this.position = position;
+            if (this.mesh) {
+                this.mesh.position = position;
+            }
+        } else if (this.mesh) {
+            this.position = this.mesh.getAbsolutePosition();
         } else {
             console.error("PlayerState: No mesh or position provided");
+        }
+    }
+
+    updatePosition(x: number, y: number, z: number) {
+        this.position = new Vector3(x, y, z);
+        if (this.mesh) {
+            this.mesh.position = this.position;
         }
     }
 

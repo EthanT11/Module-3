@@ -40,7 +40,6 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
 
         // Add animation groups to scene
         modelContainer.animationGroups.forEach(group => {
-            console.log("Animation group: ", group.name);
             group.name = `${group.name}_${uniqueId}`;
             if (scene.animationGroups.find(g => g.name === group.name)) {
                 scene.removeAnimationGroup(group);
