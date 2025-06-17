@@ -79,7 +79,7 @@ export const setupMovement = (
         // Normalize for diagonal movement
         if (move.length() > 0) {
             move.normalize().scaleInPlace(MOVE_SPEED);
-            playerMesh.position.addInPlace(move);
+            playerMesh.moveWithCollisions(move);
         }
 
         // Update player state position

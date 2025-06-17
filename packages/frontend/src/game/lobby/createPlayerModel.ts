@@ -1,4 +1,4 @@
-import { Scene, AnimationGroup, AbstractMesh } from "@babylonjs/core";
+import { Scene, AnimationGroup, AbstractMesh, Vector3, StandardMaterial, Color3, MeshBuilder } from "@babylonjs/core";
 import { LoadAssetContainerAsync } from "@babylonjs/core";
 import useSupabase from "../../hooks/useSupabase";
 
@@ -35,6 +35,9 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
         // Add meshes to scene with unique names
         modelContainer.meshes.forEach(mesh => {
             mesh.name = `${mesh.name}_${uniqueId}`;
+            mesh.showBoundingBox = true;
+            // Enable collisions for all meshes in the model
+            mesh.checkCollisions = true;
             scene.addMesh(mesh);
         });
 
@@ -54,6 +57,25 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
             console.error("CreatePlayer: Player mesh not found with id: ", meshId);
             return null;
         }
+
+        // Setup player collision ellipsoid
+        playerMesh.ellipsoid = new Vector3(1, 1, 1);
+        playerMesh.ellipsoidOffset = new Vector3(0, 1, 0); 
+
+        // Visual ellipsoid
+        const ellipsoidMaterial = new StandardMaterial("ellipsoidMat", scene);
+        ellipsoidMaterial.alpha = 0.3;
+        ellipsoidMaterial.diffuseColor = new Color3(1, 0, 0);
+        ellipsoidMaterial.wireframe = true;
+
+        const collisionMesh = MeshBuilder.CreateSphere("playerElipsoid", {
+            segments: 16,
+            diameter: 2
+        }, scene);
+        
+        collisionMesh.material = ellipsoidMaterial;
+        collisionMesh.parent = playerMesh;
+        collisionMesh.position = playerMesh.ellipsoidOffset;
 
         // Setup animations
         const animations: Animations = {
