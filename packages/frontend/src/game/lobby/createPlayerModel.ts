@@ -35,9 +35,8 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
         // Add meshes to scene with unique names
         modelContainer.meshes.forEach(mesh => {
             mesh.name = `${mesh.name}_${uniqueId}`;
-            mesh.showBoundingBox = true;
-            // Enable collisions for all meshes in the model
-            mesh.checkCollisions = true;
+            mesh.showBoundingBox = false;
+            mesh.checkCollisions = false; // GLB mesh does not handle collisions
             scene.addMesh(mesh);
         });
 
@@ -58,24 +57,17 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
             return null;
         }
 
-        // Setup player collision ellipsoid
-        playerMesh.ellipsoid = new Vector3(1, 1, 1);
-        playerMesh.ellipsoidOffset = new Vector3(0, 1, 0); 
+        // Setup collision box
+        const collisionBox = MeshBuilder.CreateBox("playerCollision", { width: 1, height: 2, depth: 1 }, scene);
+        collisionBox.position = new Vector3(0, 1, 0);
+        collisionBox.checkCollisions = true;
+        collisionBox.ellipsoid = new Vector3(0.5, 1, 0.5);
+        collisionBox.ellipsoidOffset = new Vector3(0, 1, 0);
+        collisionBox.isVisible = true;
 
-        // Visual ellipsoid
-        const ellipsoidMaterial = new StandardMaterial("ellipsoidMat", scene);
-        ellipsoidMaterial.alpha = 0.3;
-        ellipsoidMaterial.diffuseColor = new Color3(1, 0, 0);
-        ellipsoidMaterial.wireframe = true;
-
-        const collisionMesh = MeshBuilder.CreateSphere("playerElipsoid", {
-            segments: 16,
-            diameter: 2
-        }, scene);
-        
-        collisionMesh.material = ellipsoidMaterial;
-        collisionMesh.parent = playerMesh;
-        collisionMesh.position = playerMesh.ellipsoidOffset;
+        // Parent the mesh to the collision box | Mesh position is -1 to center the mesh in the collision box
+        playerMesh.parent = collisionBox;
+        playerMesh.position = new Vector3(0, -1, 0);
 
         // Setup animations
         const animations: Animations = {
@@ -94,7 +86,7 @@ export const createPlayerModel = async (scene: Scene, playerId?: string): Promis
         // Start with idle animation
         animations.idle.play(true);
 
-        return { playerMesh, animations };
+        return { playerMesh: collisionBox, animations };
     } catch (error) {
         console.error("CreatePlayer: Error creating player", error);
         return null;

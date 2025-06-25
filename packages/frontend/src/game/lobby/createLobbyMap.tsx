@@ -1,5 +1,7 @@
 import { Color3, CreateGround, HemisphericLight, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { createWall } from "../map/map_objects";
+import createTexture from "../map/utility/createTexture";
+import { MAP_CONFIG } from "../map/mapConfig";
 
 export const createLobbyMap = (scene: Scene) => {
     const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
@@ -12,11 +14,10 @@ export const createLobbyMap = (scene: Scene) => {
     }   
     const ground = CreateGround("ground", groundOptions, scene);
     ground.position.y = 0;
-    const groundMaterial = new StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
+    const groundMaterial = createTexture({name: "ground", folderName: MAP_CONFIG.GROUND_CONFIG.assetFolder, uvScale: MAP_CONFIG.GROUND_CONFIG.uvScale, scene});
     ground.material = groundMaterial;
 
     const wall = createWall(10, 10, 10, 10, 10, scene);
     wall.position.y = 0;
-    wall.showBoundingBox = true;
+    wall.showBoundingBox = false;
 }

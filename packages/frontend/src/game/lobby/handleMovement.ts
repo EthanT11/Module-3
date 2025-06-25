@@ -19,9 +19,9 @@ const KEY_MAP = {
 // This is used to map the keys to the direction of the movement
 const DIRECTION_MAP = {
     w: 0,
-    a: Math.PI / 2,
+    a: -Math.PI / 2,
     s: Math.PI,
-    d: -Math.PI / 2,
+    d: Math.PI / 2,
 } as const;
 
 // Movement changed a lot changing from first person to third person | we no longer "control" the camera but move the player and the camera follows
