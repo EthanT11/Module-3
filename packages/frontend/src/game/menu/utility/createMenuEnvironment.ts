@@ -2,7 +2,7 @@ import { Engine, Scene, ArcRotateCamera } from "@babylonjs/core";
 import { createLight, createSkyBox, createGround, createFog } from "../../map/map_objects";
 import fillMap from "../../map/utility/fillMap";
 import { createArcCamera } from "./createArcCamera";
-import { startScreenMap } from "../../map/utility/startScreenMaps";
+import { startScreenMap } from "../../map/utility/maps";
 import generateMaze from "../../map/utility/generateMaze";
 import { SCENE_CONFIG } from "../../config";
 import { startScreenConfig } from "../start_menu/startScreenConfig";

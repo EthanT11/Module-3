@@ -2,7 +2,7 @@ import { Color3, CreateGround, HemisphericLight, Scene, StandardMaterial, Vector
 import { createWall } from "../map/map_objects";
 import createTexture from "../map/utility/createTexture";
 import { MAP_CONFIG } from "../map/mapConfig";
-import { buildMapFromArray, generateMaze } from "../map/utility";
+import { buildMapFromArray, generateMaze, lobbyMap } from "../map/utility";
 
 export const createLobbyMap = (scene: Scene) => {
     const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
@@ -20,7 +20,9 @@ export const createLobbyMap = (scene: Scene) => {
     ground.material = groundMaterial;
 
     // Generate maze
-    const map = generateMaze(11, 11);
+    // const map = generateMaze(11, 11);
+    // TODO: Make a cooler lobby map
+    const map = lobbyMap;
     console.log(map);
 
     // Build the map from the array
