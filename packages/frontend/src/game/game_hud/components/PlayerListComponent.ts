@@ -144,6 +144,14 @@ export class PlayerListComponent {
             this.playerList.addControl(this.morePlayersText);
         }
     }
+    
+    hide(): void {
+        this.container.isVisible = false;
+    }
+    
+    show(): void {
+        this.container.isVisible = true;
+    }
 }
 
 // Create a container with background

@@ -178,4 +178,12 @@ export class FistComponent {
             }
         });
     }
+    
+    hide(): void {
+        this.container.isVisible = false;
+    }
+    
+    show(): void {
+        this.container.isVisible = true;
+    }
 } 

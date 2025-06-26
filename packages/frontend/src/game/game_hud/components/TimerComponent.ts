@@ -90,4 +90,14 @@ export class TimerComponent {
         const seconds = Math.floor((elapsedTime % 60000) / 1000);
         this.timer.text = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
+    
+    hide(): void {
+        this.container.isVisible = false;
+        this.congratsMessage.isVisible = false;
+    }
+    
+    show(): void {
+        this.container.isVisible = true;
+        this.congratsMessage.isVisible = true;
+    }
 } 

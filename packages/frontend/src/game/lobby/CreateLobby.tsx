@@ -104,6 +104,16 @@ const CreateLobby = (): JSX.Element => {
                 }
                 playerState.setMovementState(movementState);
 
+                gameHUD.onReadyClick(() => {
+                    console.log("Ready button clicked");
+                });
+                gameHUD.onStartClick(() => {
+                    console.log("Start button clicked");
+                });
+                gameHUD.onMainMenuClick(() => {
+                    console.log("Main menu button clicked");
+                });
+
                 // Start rendering
                 scene.executeWhenReady(() => {
                     engine.loadingScreen.hideLoadingUI();
