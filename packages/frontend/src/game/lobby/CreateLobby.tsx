@@ -16,7 +16,7 @@ import { setupCombat } from "./handleCombat";
 import { handleMultiplayer } from "./handleMultiplayer";
 import { AnimationHandler } from "./handleAnimations";
 import { PlayerState } from "./PlayerState";
-import { createLobbyMap } from "./createLobbyMap";
+import { createMap } from "./createMap";
 
 // https://kenney.nl/assets/animated-characters-2
 // mixamo
@@ -85,13 +85,13 @@ const CreateLobby = (): JSX.Element => {
                 setupCombat(scene, playerState, room);
 
                 if (room) {
-                    handleMultiplayer(scene, room, playerState, gameHUD);
+                    handleMultiplayer(scene, room, playerState, gameHUD, navigate);
                 } else {
                     console.log("CreateLobby: No room found, unable to setup multiplayer");
                 }
 
                 // Setup scene lighting and ground
-                const { spawnPosition, endPosition } = createLobbyMap(scene);
+                const { spawnPosition, endPosition } = await createMap(scene, true, isHost, room);
 
                 // Set player position to spawn point if available
                 if (spawnPosition) {
@@ -122,7 +122,6 @@ const CreateLobby = (): JSX.Element => {
                     }
                 });
                 
-                // TODO: Navigate to game route when game starts
                 gameHUD.onStartClick(() => {
                     if (room && playerState.isHost) {
                         console.log("Host attempting to start game");

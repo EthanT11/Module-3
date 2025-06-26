@@ -26,7 +26,8 @@ export const handleMultiplayer = (
     scene: Scene,
     room: Room,
     playerState: PlayerState,
-    gameHUD: GameHUD
+    gameHUD: GameHUD,
+    navigate: (path: string) => void
 ) => {
     if (!room) return;
 
@@ -78,8 +79,8 @@ export const handleMultiplayer = (
     // Handle game start
     room.onMessage("gameStarted", () => {
         console.log("Game started!");
-        // TODO: Navigate to game screen or start the actual game
-        // For now, just log the event
+        // Navigate to game screen with room ID
+        navigate(`/game/${room.id}`);
     });
 
     // Handle start game error
