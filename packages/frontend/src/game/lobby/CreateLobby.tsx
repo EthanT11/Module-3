@@ -5,7 +5,7 @@ import { setupScene } from "../setupScene";
 import { SCENE_CONFIG } from "../config";
 // import { PlayerStateManager } from "../player/PlayerState";
 // import loadMap from "../map/loadMap";
-// import { GameHUD } from "./game_hud/GameHUD";
+import { GameHUD } from "../game_hud/GameHUD";
 import { useRoomContext } from "../../contexts/RoomContext";
 import { useNavigate } from "react-router";
 import { createWall } from "../map/map_objects";
@@ -48,12 +48,20 @@ const CreateLobby = (): JSX.Element => {
             try {
                 // Setup scene
                 const scene = await setupScene(engine);
+
+                // Create game HUD
+                const gameHUD = new GameHUD(scene);
+                if (!gameHUD) {
+                    throw new Error("CreateLobby: Failed to create game HUD");
+                }
                 
                 // Initialize player state
                 const playerId = room?.sessionId;
                 if (!playerId) {
                     throw new Error("CreateLobby: No player ID found");
                 }
+                gameHUD.addPlayer(playerId, "-");
+                
                 const playerState = new PlayerState(playerId, isHost);
                 
                 // Create player model
@@ -72,10 +80,11 @@ const CreateLobby = (): JSX.Element => {
                 const animationHandler = new AnimationHandler(scene, animations);
                 playerState.setAnimationHandler(animationHandler);
 
-                setupCombat(scene, playerState, room);
+
+                // TODO: Will probably need to feed this into the gameHUD for the fist component later
                 
                 if (room) {
-                    handleMultiplayer(scene, room, playerState);
+                    handleMultiplayer(scene, room, playerState, gameHUD);
                 } else {
                     console.log("CreateLobby: No room found, unable to setup multiplayer");
                 }

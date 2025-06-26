@@ -4,6 +4,7 @@ import { MyRoomState } from "../../../../backend-colyseus/src/rooms/schema/MyRoo
 import { createPlayerModel } from "./createPlayerModel";
 import { AnimationHandler, PlayerAnimation } from "./handleAnimations";
 import { PlayerState } from "./PlayerState";
+import { GameHUD } from "../game_hud/GameHUD";
 
 export const playerMeshes = new Map<string, AbstractMesh>();
 export const remotePlayerStates = new Map<string, PlayerState>();
@@ -24,7 +25,8 @@ const sendLocalPlayerPosition = (room: Room, playerState: PlayerState) => {
 export const handleMultiplayer = (
     scene: Scene,
     room: Room,
-    playerState: PlayerState
+    playerState: PlayerState,
+    gameHUD: GameHUD
 ) => {
     if (!room) return;
 
@@ -86,6 +88,9 @@ export const handleMultiplayer = (
         const isLocalPlayer = sessionId === room.sessionId;
         // Don't need to create a model for local players
         if (isLocalPlayer) return;
+
+        // Add player to HUD
+        gameHUD.addPlayer(sessionId, "-");
 
         // Create a model for remote players
         const playerResult = await createPlayerModel(scene, sessionId);
