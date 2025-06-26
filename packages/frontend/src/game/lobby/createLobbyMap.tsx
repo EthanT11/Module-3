@@ -2,7 +2,7 @@ import { Color3, CreateGround, HemisphericLight, Scene, StandardMaterial, Vector
 import { createWall } from "../map/map_objects";
 import createTexture from "../map/utility/createTexture";
 import { MAP_CONFIG } from "../map/mapConfig";
-import { buildMapFromArray } from "../map/utility";
+import { buildMapFromArray, generateMaze } from "../map/utility";
 
 export const createLobbyMap = (scene: Scene) => {
     const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
@@ -19,32 +19,13 @@ export const createLobbyMap = (scene: Scene) => {
     const groundMaterial = createTexture({name: "ground", folderName: MAP_CONFIG.GROUND_CONFIG.assetFolder, uvScale: MAP_CONFIG.GROUND_CONFIG.uvScale, scene});
     ground.material = groundMaterial;
 
-    // 2D map array | 0 = empty, 1 = wall, 2 = spawn point, 3 = end point
-    const map = [
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
-        [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-        [1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-        [1, 0, 0, 0, 1, 3, 0, 0, 0, 1],
-        [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 2, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    ];
-
-    const map2 = [
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 2, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 3, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    ]
+    // Generate maze
+    const map = generateMaze(11, 11);
+    console.log(map);
 
     // Build the map from the array
-    const { walls, spawnPosition, endPosition } = buildMapFromArray(map, scene, {
+    const { walls, spawnPosition, endPosition } = buildMapFromArray(map, scene, 
+    {
         wallHeight: 8,
         wallWidth: 12,
         wallDepth: 12,

@@ -1,97 +1,93 @@
-import { MAP_CONFIG } from "../mapConfig";
-import { Vector2 } from "@babylonjs/core";
+// Resources:
+// https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/
+// https://www.geeksforgeeks.org/count-number-of-ways-to-reach-destination-in-a-maze-using-bfs/
+// https://cloudfour.com/thinks/generating-random-mazes-with-javascript/ | Source for the maze generation algorithm | old but still good
 
-// Generate a random position that is an odd coordinate
-const randomPosition = (mapWidth: number, mapHeight: number): Vector2 => {
-    let x = 1 + 2 * Math.floor(Math.random() * ((mapWidth - 2) / 2));
-    let y = 1 + 2 * Math.floor(Math.random() * ((mapHeight - 2) / 2));
-    return new Vector2(x, y);
-}
+const generateMaze = (
+    width: number = 11,
+    height: number = 11
+): number[][] => {
+    if (width % 2 === 0) width++;
+    if (height % 2 === 0) height++;
 
-// https://cloudfour.com/thinks/generating-random-mazes-with-javascript/ | Source for the maze generation algorithm
-const generateMaze = () => {
-    const mapWidth = MAP_CONFIG.MAZE_CONFIG.width;
-    const mapHeight = MAP_CONFIG.MAZE_CONFIG.height;
-        
-    // Fill entire map with walls (1's)
-    const generatedMaze = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(1));
+    // Fill with walls
+    const maze: number[][] = Array.from({ length: height }, () => Array(width).fill(1));
+    const dirs = [
+        [0, -2], // N
+        [0, 2],  // S
+        [2, 0],  // E
+        [-2, 0], // W
+    ];
 
-    // Generate random start and goal positions (must be at odd coordinates to ensure walls between paths)
-    let start: Vector2;
-    let goal: Vector2;
-    let distance: number;
-    let maxDistance: number;
-    let i: number = 0;
-
-    // do...while loops are really cool. do (statement) while (condition) | This do while loop ensures that the goal is far enough from the start position
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/do...while
-    do {
-        i++;
-        // Generate random goal position that is an odd coordinate
-        start = randomPosition(mapWidth, mapHeight);
-        goal = randomPosition(mapWidth, mapHeight);
-
-        distance = Math.abs(goal.x - start.x) + Math.abs(goal.y - start.y);
-        maxDistance = Math.max(mapWidth, mapHeight) / 2;
-        // console.log("Distance:", distance, "Max Distance:", maxDistance, "Iteration:", i);
-    } while (
-        // Check if the goal is far enough from the start position
-        distance < maxDistance
-    );
-
-    // Recursive function to carve paths
-    const carvePath = (x: number, y: number, visited: Set<string>) => {
-        const directions = [
-            [0, -2], // North
-            [0, 2],  // South
-            [2, 0],  // East
-            [-2, 0]  // West
-        ];
-        
-        // Shuffle directions
-        for (let i = directions.length - 1; i > 0; i--) {
+    // Helper to shuffle directions
+    function shuffle<T>(array: T[]): T[] {
+        for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [directions[i], directions[j]] = [directions[j], directions[i]];
+            [array[i], array[j]] = [array[j], array[i]];
         }
+        return array;
+    }
 
-        // Add the current cell to the visited set
-        visited.add(`${x},${y}`);
-        generatedMaze[y][x] = 0; // Carve current cell
+    // Always start at top-left
+    const spawn: [number, number] = [1, 1];
 
-        // Carve the path
-        for (const [dx, dy] of directions) {
-            const newX = x + dx;
-            const newY = y + dy;
-            let newCell: Vector2 = new Vector2(newX, newY);
-            
-            // Check if the new cell is within the bounds of the map and not visited
-            if (newCell.x > 0 && newCell.x < mapWidth - 1 && 
-                newCell.y > 0 && newCell.y < mapHeight - 1 && 
-                !visited.has(`${newCell.x},${newCell.y}`)) {
-                // Carve path between current cell and next cell
-                const carveX = x + dx/2;
-                const carveY = y + dy/2;
-                const carveCell: Vector2 = new Vector2(carveX, carveY);
-
-                generatedMaze[carveCell.y][carveCell.x] = 0;
-
-                carvePath(newX, newY, visited);
+    function carve(x: number, y: number) {
+        maze[x][y] = 0;
+        for (const [dx, dy] of shuffle([...dirs])) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (
+                nx > 0 && nx < height - 1 &&
+                ny > 0 && ny < width - 1 &&
+                maze[nx][ny] === 1
+            ) {
+                maze[x + dx / 2][y + dy / 2] = 0; // Remove wall between
+                carve(nx, ny);
             }
         }
-    };
+    }
 
-    // Start carving from the start position
-    const visited = new Set<string>();
-    carvePath(start.x, start.y, visited);
-    // console.log("Visited:", visited);
+    carve(spawn[0], spawn[1]);
 
-    // Place start and goal
-    generatedMaze[start.y][start.x] = 3;
-    // console.log("Start:", start);
-    generatedMaze[goal.y][goal.x] = 4;
-    // console.log("Goal:", goal);
+    // Find the farthest cell from spawn using BFS
+    // BFS = Breadth-First Search
+    let farthest: [number, number] = spawn;
+    let maxDist = 0;
+    // Init visited array with false since we need to keep track of visited cells
+    const visited = Array.from({ length: height }, () => Array(width).fill(false));
+    // Init queue with spawn position and distance 0
+    const queue: Array<{ pos: [number, number], dist: number }> = [{ pos: spawn, dist: 0 }];
+    // Mark spawn as visited
+    visited[spawn[0]][spawn[1]] = true;
 
-    return generatedMaze;
+    // BFS loop
+    while (queue.length > 0) {
+        const { pos, dist } = queue.shift()!;
+        if (dist > maxDist) {
+            maxDist = dist;
+            farthest = pos;
+        }
+        // Check neighbors
+        for (const [dx, dy] of dirs) {
+            const nx = pos[0] + dx / 2;
+            const ny = pos[1] + dy / 2;
+            if (
+                nx > 0 && nx < height - 1 &&
+                ny > 0 && ny < width - 1 &&
+                !visited[nx][ny] &&
+                maze[nx][ny] === 0
+            ) {
+                visited[nx][ny] = true;
+                queue.push({ pos: [nx, ny], dist: dist + 1 });
+            }
+        }
+    }
+
+    // Place spawn and exit
+    maze[spawn[0]][spawn[1]] = 2;
+    maze[farthest[0]][farthest[1]] = 3;
+
+    return maze;
 };
 
 export default generateMaze;

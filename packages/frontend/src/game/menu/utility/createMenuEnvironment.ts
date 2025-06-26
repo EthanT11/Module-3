@@ -6,6 +6,7 @@ import { startScreenMap } from "../../map/utility/startScreenMaps";
 import generateMaze from "../../map/utility/generateMaze";
 import { SCENE_CONFIG } from "../../config";
 import { startScreenConfig } from "../start_menu/startScreenConfig";
+import { buildMapFromArray } from "../../map/utility";
 export interface MenuEnvironment {
   engine: Engine;
   scene: Scene;
@@ -30,10 +31,12 @@ export const createMenuEnvironment = async (canvas: HTMLCanvasElement): Promise<
 
     // Create and fill map
     // const map = startScreenMap;
-    const map = generateMaze();
+    const map = generateMaze(20, 20);
     if (!map) {
         throw new Error("Failed to create map");
     } else {
+      // buildMapFromArray([...map].reverse(), scene);
+      // TODO: Fix buildMapFromArray to so the ground fits the map regardless of the size of the map
         fillMap([...map].reverse(), scene);
     }
 
