@@ -82,7 +82,8 @@ const CreateLobby = (): JSX.Element => {
 
 
                 // TODO: Will probably need to feed this into the gameHUD for the fist component later
-                
+                setupCombat(scene, playerState, room);
+
                 if (room) {
                     handleMultiplayer(scene, room, playerState, gameHUD);
                 } else {
@@ -97,7 +98,7 @@ const CreateLobby = (): JSX.Element => {
                     playerState.setPosition(spawnPosition);
                 }
 
-                const movementState = setupMovement(scene, playerState, endPosition);
+                const movementState = setupMovement(scene, playerState, endPosition, gameHUD);
                 if (!movementState) {
                     throw new Error("CreateLobby: Failed to setup movement");
                 }
@@ -106,6 +107,7 @@ const CreateLobby = (): JSX.Element => {
                 // Start rendering
                 scene.executeWhenReady(() => {
                     engine.loadingScreen.hideLoadingUI();
+                    gameHUD.startTimer();
                     engine.runRenderLoop(() => { 
                         scene.render();
                     });

@@ -1,6 +1,7 @@
 import { Scene, Vector3 } from "@babylonjs/core";
 import { handleRotation } from "./handleRotation";
 import { PlayerState } from "./PlayerState";
+import { GameHUD } from "../game_hud/GameHUD";
 export interface MovementState {
     keys: { w: boolean; a: boolean; s: boolean; d: boolean };
     wasMoving: boolean;
@@ -31,7 +32,8 @@ const DIRECTION_MAP = {
 export const setupMovement = (
     scene: Scene,
     playerState: PlayerState,
-    endPosition?: Vector3
+    endPosition?: Vector3,
+    gameHUD?: GameHUD
 ) => {
 
     // Init movement state 
@@ -99,6 +101,9 @@ export const setupMovement = (
             if (distance <= GOAL_DISTANCE) {
                 console.log("🎉 GOAL REACHED! Player has reached the end point!");
                 goalReached = true;
+                if (gameHUD) {
+                    gameHUD.showCongratulations(gameHUD.stopTimer());
+                }
             }
         }
     });
