@@ -9,6 +9,7 @@ export interface MovementState {
 }
 
 const MOVE_SPEED = 0.3;
+const GOAL_DISTANCE = 5; // Distance threshold to consider player at goal
 const KEY_MAP = {
     KeyW: 'w',
     KeyA: 'a',
@@ -29,7 +30,8 @@ const DIRECTION_MAP = {
 // The keys are stored in a state object
 export const setupMovement = (
     scene: Scene,
-    playerState: PlayerState
+    playerState: PlayerState,
+    endPosition?: Vector3
 ) => {
 
     // Init movement state 
@@ -55,6 +57,9 @@ export const setupMovement = (
             state.keys[key] = kb.type === 1;
         }
     });
+
+    // Track if goal has been reached to avoid spam logging
+    let goalReached = false;
 
     // Movement and animation update
     scene.onBeforeRenderObservable.add(() => {
@@ -86,6 +91,16 @@ export const setupMovement = (
         playerState.setPosition(playerMesh.position);
         // Animation switching | pass the isMoving state to the animation handler
         playerState.getAnimationHandler()?.handleMovement(isMoving);
+
+        // Check if player reached the goal
+        // TODO: Probably factor this out as it's own function since it's going to be quite large
+        if (endPosition && !goalReached) {
+            const distance = Vector3.Distance(playerMesh.position, endPosition);
+            if (distance <= GOAL_DISTANCE) {
+                console.log("🎉 GOAL REACHED! Player has reached the end point!");
+                goalReached = true;
+            }
+        }
     });
 
     return state;

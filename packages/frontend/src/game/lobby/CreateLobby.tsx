@@ -72,12 +72,6 @@ const CreateLobby = (): JSX.Element => {
                 const animationHandler = new AnimationHandler(scene, animations);
                 playerState.setAnimationHandler(animationHandler);
 
-                const movementState = setupMovement(scene, playerState);
-                if (!movementState) {
-                    throw new Error("CreateLobby: Failed to setup movement");
-                }
-                playerState.setMovementState(movementState);
-
                 setupCombat(scene, playerState, room);
                 
                 if (room) {
@@ -87,7 +81,18 @@ const CreateLobby = (): JSX.Element => {
                 }
 
                 // Setup scene lighting and ground
-                createLobbyMap(scene);
+                const { spawnPosition, endPosition } = createLobbyMap(scene);
+
+                // Set player position to spawn point if available
+                if (spawnPosition) {
+                    playerState.setPosition(spawnPosition);
+                }
+
+                const movementState = setupMovement(scene, playerState, endPosition);
+                if (!movementState) {
+                    throw new Error("CreateLobby: Failed to setup movement");
+                }
+                playerState.setMovementState(movementState);
 
                 // Start rendering
                 scene.executeWhenReady(() => {
