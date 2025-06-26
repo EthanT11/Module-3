@@ -17,8 +17,8 @@ export class Player extends Schema {
   // Combat
   @type("number") health: number = 100;
   @type("number") maxHealth: number = 100;
-  
-  
+  // Lobby
+  @type("boolean") ready: boolean = false;
 }
 
 export class Map extends Schema {

@@ -33,8 +33,60 @@ export const handleMultiplayer = (
     let roomState: MyRoomState;
     roomState = room.state;
 
+    // Ready States
+    const playerReadyStates = new Map<string, boolean>();
+
+    // Function to update ready states in HUD
+    const updateReadyStatesInHUD = () => {
+        const allPlayersReady = Array.from(playerReadyStates.values()).every(ready => ready);
+        const hasMultiplePlayers = playerReadyStates.size >= 2;
+        
+        // Enable/disable start button based on ready states
+        if (playerState.isHost) {
+            gameHUD.setStartButtonEnabled(allPlayersReady && hasMultiplePlayers);
+        }
+    };
+
     // Send local player position to server
     sendLocalPlayerPosition(room, playerState);
+
+    // Send initial ready state to server
+    room.send("setReady", {
+        ready: playerState.getIsReady()
+    });
+
+    // Initialize ready states for existing players
+    roomState.players.forEach((player, sessionId) => {
+        playerReadyStates.set(sessionId, player.ready);
+        // Update player list with ready indicators
+        gameHUD.updatePlayerReady(sessionId, player.ready);
+    });
+    updateReadyStatesInHUD();
+
+    // Handle ready state updates
+    room.onMessage("playerReady", (message) => {
+        console.log("Player ready state update:", message);
+        playerReadyStates.set(message.playerId, message.ready);
+        
+        // Update HUD to reflect ready states
+        updateReadyStatesInHUD();
+        
+        // Update player list with ready indicators
+        gameHUD.updatePlayerReady(message.playerId, message.ready);
+    });
+
+    // Handle game start
+    room.onMessage("gameStarted", () => {
+        console.log("Game started!");
+        // TODO: Navigate to game screen or start the actual game
+        // For now, just log the event
+    });
+
+    // Handle start game error
+    room.onMessage("startGameError", (message) => {
+        console.log("Start game error:", message.message);
+        // TODO: Show error message to user
+    });
 
     // Handle hit notifications
     room.onMessage("hit", (message) => {
@@ -86,6 +138,14 @@ export const handleMultiplayer = (
     // When a player joins the room
     roomState.players.onAdd(async (player, sessionId) => {
         const isLocalPlayer = sessionId === room.sessionId;
+        
+        // Track ready state for all players
+        playerReadyStates.set(sessionId, player.ready);
+        updateReadyStatesInHUD();
+        
+        // Update player list
+        gameHUD.updatePlayerReady(sessionId, player.ready);
+        
         // Don't need to create a model for local players
         if (isLocalPlayer) return;
 
@@ -114,6 +174,11 @@ export const handleMultiplayer = (
     
     roomState.players.onRemove((player, sessionId) => {
         console.log("Player left: ", player, sessionId);
+        
+        // Remove ready state
+        playerReadyStates.delete(sessionId);
+        updateReadyStatesInHUD();
+        
         // Remote Player Mesh
         const removedPlayerMesh = playerMeshes.get(sessionId);
         if (removedPlayerMesh) {

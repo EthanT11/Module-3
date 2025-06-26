@@ -115,6 +115,10 @@ export class GameHUD {
         this.playerListComponent.removePlayer(playerId);
     }
 
+    updatePlayerReady(playerId: string, isReady: boolean): void {
+        this.playerListComponent.updatePlayerReady(playerId, isReady);
+    }
+
     // Lobby functions
     onReadyClick(callback: () => void): void {
         this.lobbyComponent.onReadyClick(callback);
@@ -126,6 +130,10 @@ export class GameHUD {
     
     onMainMenuClick(callback: () => void): void {
         this.lobbyComponent.onMainMenuClick(callback);
+    }
+
+    setStartButtonEnabled(enabled: boolean): void {
+        this.lobbyComponent.setStartButtonEnabled(enabled);
     }
 
     // Cleanup

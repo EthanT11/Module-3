@@ -104,14 +104,34 @@ const CreateLobby = (): JSX.Element => {
                 }
                 playerState.setMovementState(movementState);
 
+                // Lobby functions
+                // Will move these to the handleMultiplayer function later
                 gameHUD.onReadyClick(() => {
-                    console.log("Ready button clicked");
+                    playerState.setIsReady(!playerState.getIsReady());
+                    if (playerState.getIsReady()) {
+                        console.log("Player is ready");
+                    } else {
+                        console.log("Player is not ready");
+                    }
+                    
+                    // Send ready state to server
+                    if (room) {
+                        room.send("setReady", {
+                            ready: playerState.getIsReady()
+                        });
+                    }
                 });
+                
+                // TODO: Navigate to game route when game starts
                 gameHUD.onStartClick(() => {
-                    console.log("Start button clicked");
+                    if (room && playerState.isHost) {
+                        console.log("Host attempting to start game");
+                        room.send("startGame", {});
+                    }
                 });
+                
                 gameHUD.onMainMenuClick(() => {
-                    console.log("Main menu button clicked");
+                    navigate("/");
                 });
 
                 // Start rendering

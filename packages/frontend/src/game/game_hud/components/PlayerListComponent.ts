@@ -105,6 +105,21 @@ export class PlayerListComponent {
         }
     }
     
+    updatePlayerReady(playerId: string, isReady: boolean): void {
+        const playerControl = this.players.get(playerId);
+        if (playerControl) {
+            const currentText = playerControl.text;
+            const readyIndicator = isReady ? " ✅" : " ❌";
+            
+            // Remove existing ready indicator if present
+            const textWithoutIndicator = currentText.replace(/ [✅❌]$/, "");
+            playerControl.text = textWithoutIndicator + readyIndicator;
+            
+            // Update color based on ready status
+            playerControl.color = isReady ? GUI_COLORS.highlight : GUI_COLORS.text;
+        }
+    }
+    
     private updatePlayerListDisplay(): void {
         // Clear existing player entries
         const children = this.playerList.children;

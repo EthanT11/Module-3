@@ -19,6 +19,8 @@ export interface IPlayerState {
 export class PlayerState implements IPlayerState {
     sessionId: string;
     isHost: boolean;
+    isReady: boolean;
+
     position: Vector3;
     rotationY: number;
     
@@ -32,15 +34,18 @@ export class PlayerState implements IPlayerState {
 
     constructor(sessionId: string, isHost: boolean) {
         // Position
-        this.sessionId = sessionId;
-        this.isHost = isHost;
         this.position = new Vector3(0, 0, 0); // TODO: Get position from server
         this.rotationY = 0; // TODO: Get rotation from server
-
+        
         // Combat
         this.health = 100;
         this.maxHealth = 100;
         this.isHit = false;
+        
+        // Lobby
+        this.sessionId = sessionId;
+        this.isHost = isHost;
+        this.isReady = false;
     }
 
     // Setters
@@ -84,6 +89,10 @@ export class PlayerState implements IPlayerState {
         this.health = health;
     }
 
+    setIsReady(isReady: boolean) {
+        this.isReady = isReady;
+    }
+
     getHealth() {
         return this.health;
     }
@@ -120,5 +129,9 @@ export class PlayerState implements IPlayerState {
 
     getRotationY() {
         return this.rotationY;
+    }
+
+    getIsReady() {
+        return this.isReady;
     }
 }

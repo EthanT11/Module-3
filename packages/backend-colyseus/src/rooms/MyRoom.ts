@@ -73,6 +73,42 @@ export class MyRoom extends Room<MyRoomState> {
       this.broadcast("punch", message, { except: client });
     });
 
+    // Handle ready state updates
+    this.onMessage("setReady", (client, message): void => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) return;
+      
+      player.ready = message.ready;
+      console.log(`Player ${client.sessionId} ready state: ${player.ready}`);
+      
+      // Broadcast ready state update to all clients
+      this.broadcast("playerReady", {
+        playerId: client.sessionId,
+        ready: player.ready
+      });
+    });
+
+    // Handle start game request
+    this.onMessage("startGame", (client, message): void => {
+      // Only allow host to start the game
+      if (client.sessionId !== this.state.hostId) return;
+      
+      // Check if all players are ready
+      const allPlayersReady = Array.from(this.state.players.values()).every(player => player.ready);
+      const hasMultiplePlayers = this.state.players.size >= 2;
+      
+      if (allPlayersReady && hasMultiplePlayers) {
+        console.log("Starting game - all players ready");
+        this.broadcast("gameStarted");
+      } else {
+        console.log("Cannot start game - not all players ready or insufficient players");
+        // TODO: Implement a single player ready but for now we need at least 2 players to start
+        client.send("startGameError", {
+          message: allPlayersReady ? "Need at least 2 players to start" : "All players must be ready"
+        });
+      }
+    });
+
     // Catch playground message types |
     this.onMessage("_playground_message_types", (client, message) => {
       console.log("Playground Message: ", message, "From: ", client.sessionId);

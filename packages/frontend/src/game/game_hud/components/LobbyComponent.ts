@@ -68,11 +68,12 @@ export class LobbyComponent {
         this.startButton = Button.CreateSimpleButton("startButton", "Start");
         this.startButton.width = "100%";
         this.startButton.height = "50px";
-        this.startButton.color = GUI_COLORS.text;
+        this.startButton.color = "#666666";
         this.startButton.fontSize = GUI_FONT_SIZES.subtitle;
-        this.startButton.background = GUI_COLORS.highlight;
+        this.startButton.background = GUI_COLORS.background;
         this.startButton.cornerRadius = GUI_DIMENSIONS.borderRadius;
         this.startButton.thickness = 2;
+        this.startButton.isEnabled = false;
         buttonPanel.addControl(this.startButton);
         
         // Main Menu button
@@ -115,5 +116,11 @@ export class LobbyComponent {
     
     onMainMenuClick(callback: () => void): void {
         this.mainMenuButton.onPointerClickObservable.add(callback);
+    }
+
+    setStartButtonEnabled(enabled: boolean): void {
+        this.startButton.isEnabled = enabled;
+        this.startButton.background = enabled ? GUI_COLORS.highlight : GUI_COLORS.background;
+        this.startButton.color = enabled ? GUI_COLORS.text : "#666666";
     }
 }
