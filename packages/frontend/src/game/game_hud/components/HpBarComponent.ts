@@ -79,4 +79,12 @@ export class HpBarComponent {
     updateHP(hp: number): void {
         this.hpText.text = hp.toString();
     }
+    
+    hide(): void {
+        this.container.isVisible = false;
+    }
+    
+    show(): void {
+        this.container.isVisible = true;
+    }
 } 

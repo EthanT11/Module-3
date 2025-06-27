@@ -4,7 +4,8 @@ import {
     HpBarComponent, 
     PlayerListComponent, 
     TimerComponent, 
-    FistComponent 
+    FistComponent,
+    LobbyComponent
 } from "./components";
 
 export class GameHUD {
@@ -18,6 +19,10 @@ export class GameHUD {
     private playerListComponent: PlayerListComponent;
     private hpBarComponent: HpBarComponent;
     private fistComponent: FistComponent;
+    private lobbyComponent: LobbyComponent;
+    
+    // State
+    private isLobbyVisible: boolean = false;
 
     constructor(scene: Scene) {
         // Create the GUI
@@ -37,9 +42,48 @@ export class GameHUD {
         this.hpBarComponent = new HpBarComponent(this.mainContainer);
         this.playerListComponent = new PlayerListComponent(this.mainContainer);
         this.fistComponent = new FistComponent(this.mainContainer, scene);
+        this.lobbyComponent = new LobbyComponent(this.mainContainer);
         
         // Set up initial state
         this.isRunning = false;
+        
+        // Set up TAB key listener
+        this.setupTabKeyListener(scene);
+    }
+    
+    private setupTabKeyListener(scene: Scene): void {
+        scene.onKeyboardObservable.add((kb) => {
+            if (kb.type === 1 && kb.event.code === "Tab") { 
+                kb.event.preventDefault(); // Prevent default TAB behavior
+                this.toggleLobby();
+            }
+        });
+    }
+    
+    private toggleLobby(): void {
+        if (this.isLobbyVisible) {
+            this.showGame();
+        } else {
+            this.showLobby();
+        }
+    }
+    
+    private showGame(): void {
+        this.timerComponent.show();
+        this.hpBarComponent.show();
+        this.playerListComponent.show();
+        this.fistComponent.show();
+        this.lobbyComponent.hide();
+        this.isLobbyVisible = false;
+    }
+    
+    private showLobby(): void {
+        this.timerComponent.hide();
+        this.hpBarComponent.hide();
+        this.playerListComponent.hide();
+        this.fistComponent.hide();
+        this.lobbyComponent.show();
+        this.isLobbyVisible = true;
     }
 
     // Timer functions
@@ -69,6 +113,27 @@ export class GameHUD {
 
     removePlayer(playerId: string): void {
         this.playerListComponent.removePlayer(playerId);
+    }
+
+    updatePlayerReady(playerId: string, isReady: boolean): void {
+        this.playerListComponent.updatePlayerReady(playerId, isReady);
+    }
+
+    // Lobby functions
+    onReadyClick(callback: () => void): void {
+        this.lobbyComponent.onReadyClick(callback);
+    }
+    
+    onStartClick(callback: () => void): void {
+        this.lobbyComponent.onStartClick(callback);
+    }
+    
+    onMainMenuClick(callback: () => void): void {
+        this.lobbyComponent.onMainMenuClick(callback);
+    }
+
+    setStartButtonEnabled(enabled: boolean): void {
+        this.lobbyComponent.setStartButtonEnabled(enabled);
     }
 
     // Cleanup

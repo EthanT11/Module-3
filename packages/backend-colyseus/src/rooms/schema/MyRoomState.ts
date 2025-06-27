@@ -4,10 +4,21 @@ import { Schema, type, MapSchema, ArraySchema } from "@colyseus/schema";
 // https://doc.babylonjs.com/guidedLearning/networking/Colyseus#room-state-and-schema
 
 export class Player extends Schema {
+  // Position
   @type("number") x: number = 0;
   @type("number") y: number = 0;
   @type("number") z: number = 0;
   @type("number") rotationY: number = 0;
+  // Animations
+  @type("boolean") isMoving: boolean = false;
+  @type("boolean") isPunching: boolean = false;
+  @type("boolean") isHit: boolean = false;
+  @type("boolean") isDead: boolean = false;
+  // Combat
+  @type("number") health: number = 100;
+  @type("number") maxHealth: number = 100;
+  // Lobby
+  @type("boolean") ready: boolean = false;
 }
 
 export class Map extends Schema {

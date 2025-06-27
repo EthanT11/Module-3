@@ -16,10 +16,14 @@ export class MyRoom extends Room<MyRoomState> {
       const player = this.state.players.get(client.sessionId); // Get the player from the players map
       if (!player) return;
       // console.log("Updating player position: ", player.x, player.y, player.z, player.rotationY, message);
+      // Check if player is moving by comparing the current position with the new position
+      const isMoving = Math.abs(player.x - message.x) > 0.01 || Math.abs(player.z - message.z) > 0.01;
+      
       player.x = message.x;
       player.y = message.y;
       player.z = message.z;
       player.rotationY = message.rotationY;
+      player.isMoving = isMoving;
       // console.log("Updated player position: ", player.x, player.y, player.z, player.rotationY);
     });
 
@@ -46,6 +50,63 @@ export class MyRoom extends Room<MyRoomState> {
         fogDensity: this.state.map.fogDensity
       });
       console.log("Sent map state to client: ", client.sessionId);
+    });
+
+    // Handle hit notifications
+    this.onMessage("hit", (client, message): void => {
+      console.log("Hit received: ", message);
+      const player = this.state.players.get(message.hitPlayer);
+      if (!player) return;
+      player.health -= message.damage;
+      console.log("Player health: ", player.health);
+      if (player.health <= 0) {
+        player.isDead = true;
+        console.log("Player is dead: ", player.isDead);
+      }
+      // Broadcast the hit message to all clients
+      this.broadcast("hit", message);
+    });
+
+    // Handle punch animations
+    this.onMessage("punch", (client, message): void => {
+      // Broadcast the punch message to all clients except the sender
+      this.broadcast("punch", message, { except: client });
+    });
+
+    // Handle ready state updates
+    this.onMessage("setReady", (client, message): void => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) return;
+      
+      player.ready = message.ready;
+      console.log(`Player ${client.sessionId} ready state: ${player.ready}`);
+      
+      // Broadcast ready state update to all clients
+      this.broadcast("playerReady", {
+        playerId: client.sessionId,
+        ready: player.ready
+      });
+    });
+
+    // Handle start game request
+    this.onMessage("startGame", (client, message): void => {
+      // Only allow host to start the game
+      if (client.sessionId !== this.state.hostId) return;
+      
+      // Check if all players are ready
+      const allPlayersReady = Array.from(this.state.players.values()).every(player => player.ready);
+      const hasMultiplePlayers = this.state.players.size >= 2;
+      
+      if (allPlayersReady && hasMultiplePlayers) {
+        console.log("Starting game - all players ready");
+        this.broadcast("gameStarted");
+      } else {
+        console.log("Cannot start game - not all players ready or insufficient players");
+        // TODO: Implement a single player ready but for now we need at least 2 players to start
+        client.send("startGameError", {
+          message: allPlayersReady ? "Need at least 2 players to start" : "All players must be ready"
+        });
+      }
     });
 
     // Catch playground message types |

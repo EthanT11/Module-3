@@ -2,9 +2,11 @@ import { Engine, Scene, ArcRotateCamera } from "@babylonjs/core";
 import { createLight, createSkyBox, createGround, createFog } from "../../map/map_objects";
 import fillMap from "../../map/utility/fillMap";
 import { createArcCamera } from "./createArcCamera";
-import { startScreenMap } from "../../map/utility/startScreenMaps";
+import { startScreenMap } from "../../map/utility/maps";
 import generateMaze from "../../map/utility/generateMaze";
-
+import { SCENE_CONFIG } from "../../config";
+import { startScreenConfig } from "../start_menu/startScreenConfig";
+import { buildMapFromArray } from "../../map/utility";
 export interface MenuEnvironment {
   engine: Engine;
   scene: Scene;
@@ -13,6 +15,8 @@ export interface MenuEnvironment {
 
 export const createMenuEnvironment = async (canvas: HTMLCanvasElement): Promise<MenuEnvironment> => {
   const engine = new Engine(canvas, true);
+  engine.setHardwareScalingLevel(1.0); // Helps with performance on low end devices
+  engine.maxFPS = SCENE_CONFIG.MAX_FPS;
   const scene = new Scene(engine);
   
   // Setup loading screen
@@ -26,10 +30,13 @@ export const createMenuEnvironment = async (canvas: HTMLCanvasElement): Promise<
     createFog(scene);
 
     // Create and fill map
-    const map = generateMaze();
+    // const map = startScreenMap;
+    const map = generateMaze(20, 20);
     if (!map) {
         throw new Error("Failed to create map");
     } else {
+      // buildMapFromArray([...map].reverse(), scene);
+      // TODO: Fix buildMapFromArray to so the ground fits the map regardless of the size of the map
         fillMap([...map].reverse(), scene);
     }
 
@@ -38,6 +45,15 @@ export const createMenuEnvironment = async (canvas: HTMLCanvasElement): Promise<
     if (!camera) {
       throw new Error("Failed to create camera");
     }
+
+    engine.runRenderLoop(() => {
+      camera.alpha += startScreenConfig.CAMERA.CAMERA_SPEED;  
+      scene.render();
+    });
+
+    window.addEventListener("resize", () => {
+      engine.resize();
+    });
 
     console.log("Start Environment Created");
     return { engine, scene, camera };
