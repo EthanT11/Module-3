@@ -44,7 +44,7 @@ const CreateLobby = (): JSX.Element => {
             // Start loading screen
             engine.loadingScreen.displayLoadingUI();
             engine.loadingScreen.loadingUIBackgroundColor = "black";
-            
+
 
             try {
                 // Setup scene
@@ -55,6 +55,7 @@ const CreateLobby = (): JSX.Element => {
                 if (!gameHUD) {
                     throw new Error("CreateLobby: Failed to create game HUD");
                 }
+                
                 
                 // Initialize player state
                 const playerId = room?.sessionId;
